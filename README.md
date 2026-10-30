@@ -1,20 +1,25 @@
 # HSS / HWU Save Editor
 
-This repository hosts the browser-based High School Story (HSS) and Hollywood U (HWU) save editor as a static GitHub Pages site.
+This is my High School Story (HSS) and Hollywood U (HWU) save editor. It is web-based and all files are processed entirely locally. It is still in beta, and may not always function correctly. Always keep a backup of your save file in a safe place in the case of corruption.
 
-## Open the editor
+## Editor capabilities
 
-After the first successful Pages deployment, visit:
+- Detects HSS and HWU save profiles and applies the matching visual theme.
+- Decrypts and re-encrypts saves in-browser, with protobuf parsing that retains unknown fields.
+- Includes quick resource fields, editable raw save data, undo/revert, search, save summary, classmates, campus buildings and plots, and relationships.
 
+## How to use the editor
+
+First, you want to use the BACKUP / RESTORE menu in your HSS / HWU Restoration apk to export a copy of your save file.
+
+Visit this link:
 **https://muttupnable.github.io/hss-hwu-save-editor/**
 
+The first page you see, there is a box to upload your save file too. Select this and it will open a file picker, or if you are on PC you can drag the file directly over the box.
+
+You will then be taken to the save editor and analysis page where you will find menus and buttons to change your save data with. Have fun and always ensure to keep your original backup safe and untouched!
+
 The root `index.html` is the editor. Its HSS and HWU art and interface files are served from the relative `assets/` directories.
-
-## GitHub Pages deployment
-
-The workflow in `.github/workflows/pages.yml` deploys the repository root to GitHub Pages after every push to `main`. It can also be started manually from the repository's **Actions** tab using **Deploy static site to GitHub Pages**.
-
-For a new fork, enable **Settings → Pages → Build and deployment → Source: GitHub Actions**. The first deployment must complete successfully before the Pages URL is available. The workflow uses the official GitHub Pages actions and needs no application secrets, backend, package installation, or third-party runtime dependencies.
 
 ## Privacy and security
 
@@ -22,11 +27,5 @@ For a new fork, enable **Settings → Pages → Build and deployment → Source:
 - The editor uses the browser Web Crypto API. Mobile browsers generally require a secure context; the HTTPS GitHub Pages URL provides one. Mobile file selection and downloads can still vary by browser and have not been device-tested.
 - This is a public static site. All HTML and JavaScript are downloadable and inspectable, including any encryption keys embedded in the editor source. Those keys are not secret.
 - Keep an untouched backup and edit only copies. A successful download does not prove a game will accept the edited save.
-
-## Editor capabilities
-
-- Detects HSS and HWU save profiles and applies the matching visual theme.
-- Decrypts and re-encrypts saves in-browser, with protobuf parsing that retains unknown fields.
-- Includes quick resource fields, editable raw save data, undo/revert, search, save summary, classmates, campus buildings and plots, and relationships.
 
 See [index.html](index.html) for the complete client-side implementation.
