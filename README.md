@@ -1,16 +1,17 @@
 # HSS / HWU Save Editor
 
-This is my High School Story (HSS) and Hollywood U (HWU) save editor. It is web-based and all files are processed entirely locally. It is still in beta, and may not always function correctly. Always keep a backup of your save file in a safe place in the case of corruption.
+This is my High School Story (HSS) and Hollywood U (HWU) save editor. It's web-based, and your save is processed on your device. It's still in beta, so it may not always work correctly. Always keep a safe backup of your save in case something goes wrong.
 
-## Editor capabilities
+## What the editor can do
 
-- Detects HSS and HWU save profiles and applies the matching visual theme.
-- Decrypts and re-encrypts saves in-browser, with protobuf parsing that retains unknown fields.
-- Includes quick resource fields, editable raw save data, undo/revert, search, save summary, classmates, campus buildings and plots, and relationships.
+- It can tell whether you selected an HSS or HWU save and show the matching theme.
+- It lets you edit resources and other save data, including classmates, campus buildings and plots, and relationships.
+- You can search and review the save, undo your edits, or revert to the file you loaded.
+- The editor tries to keep save data it doesn't recognize, but this doesn't guarantee that the game will accept an edited save.
 
 ## How to use the editor
 
-First, you want to use the BACKUP / RESTORE menu in your HSS / HWU Restoration apk to export a copy of your save file.
+First, use the BACKUP / RESTORE menu in your HSS / HWU Restoration apk to export a copy of your save file.
 
 Visit this link:
 **https://muttupnable.github.io/hss-hwu-save-editor/**
@@ -19,13 +20,14 @@ The first page has a box to select your save file. Click it to open the file pic
 
 You'll then see the save editor and analysis page, with menus and buttons to change your save data. When you're done, select **Download edited save** to download your edited copy. Have fun, and keep your original backup safe and untouched!
 
-The root `index.html` is the editor. Its HSS and HWU art and interface files are served from the relative `assets/` directories.
+## A few things to know
 
-## Privacy and security
+Your save is opened and edited in your browser. The website doesn't send it to a server.
 
-- Save files are selected, read, parsed, edited, and re-encrypted locally in the visitor's browser. The site has no backend and does not upload save files.
-- The editor uses the browser Web Crypto API. Mobile browsers generally require a secure context; the HTTPS GitHub Pages URL provides one. Mobile file selection and downloads can still vary by browser and have not been device-tested.
-- This is a public static site. All HTML and JavaScript are downloadable and inspectable, including any encryption keys embedded in the editor source. Those keys are not secret.
-- Keep an untouched backup and edit only copies. A successful download does not prove a game will accept the edited save.
+The editor uses your browser's Web Crypto feature. The site uses HTTPS, but mobile browsers can still differ in how they let you choose and download files. Phone use hasn't been tested on every browser.
 
-See [index.html](index.html) for the complete client-side implementation.
+The editor's code is public and can be inspected. Any encryption keys included in the code are visible, so they aren't secret.
+
+An edited save hasn't been checked in the game. Try it with a copy and keep your original backup safe.
+
+The website is hosted on GitHub Pages. The editor and its game artwork are in `index.html` and the `assets/` folders.
