@@ -29,4 +29,4 @@ For a new fork, enable **Settings → Pages → Build and deployment → Source:
 - Decrypts and re-encrypts saves in-browser, with protobuf parsing that retains unknown fields.
 - Includes quick resource fields, editable raw save data, undo/revert, search, save summary, classmates, campus buildings and plots, and relationships.
 
-See [ASSET_SOURCES.md](ASSET_SOURCES.md) for asset provenance and [index.html](index.html) for the complete client-side implementation.
+See [index.html](index.html) for the complete client-side implementation.
