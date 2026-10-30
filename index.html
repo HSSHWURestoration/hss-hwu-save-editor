@@ -1,0 +1,2280 @@
+<!DOCTYPE html>
+<html lang="en" data-game="hss">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HSS / HWU Save Editor</title>
+<style>
+@font-face{
+  font-family:"HSS UI";
+  src:url("assets/hss/ui/OpenSans-CondBold.ttf") format("truetype");
+  font-weight:700;
+  font-display:swap;
+}
+@font-face{
+  font-family:"HSS UI";
+  src:url("assets/hss/ui/OpenSans-ExtraBold.ttf") format("truetype");
+  font-weight:800;
+  font-display:swap;
+}
+@font-face{
+  font-family:"HSS Display";
+  src:url("assets/hss/ui/Display.ttf") format("truetype");
+  font-display:swap;
+}
+@font-face{
+  font-family:"HWU UI";
+  src:url("assets/hwu/ui/OpenSans-CondBold.ttf") format("truetype");
+  font-weight:700;
+  font-display:swap;
+}
+@font-face{
+  font-family:"HWU UI";
+  src:url("assets/hwu/ui/OpenSans-ExtraBold.ttf") format("truetype");
+  font-weight:800;
+  font-display:swap;
+}
+@font-face{
+  font-family:"HWU Display";
+  src:url("assets/hwu/ui/Display.ttf") format("truetype");
+  font-display:swap;
+}
+:root{
+  --paper:#fff9ed; --paper-dark:#f3e8d3; --ink:#203449; --ink-soft:#526778;
+  --rule:#c4b789; --accent:#a9322b; --accent-soft:#d3533b; --good:#367353; --bad:#a83c2f;
+  --accent-wash:rgba(169,50,43,.08);
+  --banner-text:#3e211a;
+  --surface-ink:#4b3328; --button-ink:#fff8e8;
+  --splash-image:url("assets/hss/loading_screen.png");
+  --banner-image:url("assets/hss/banner_background.png");
+  --panel-image:url("assets/hss/ui/panel.png");
+  --control-image:url("assets/hss/ui/control.png");
+  --button-image:url("assets/hss/ui/button.png");
+  --button-selected-image:url("assets/hss/ui/button_selected.png");
+  --section-banner-image:url("assets/hss/ui/section_banner.png");
+  --ui-font:"HSS UI";
+  --display-font:"HSS Display";
+  --mono:var(--ui-font),Arial,sans-serif;
+  --serif:var(--display-font),Georgia,serif;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+:root[data-game="hwu"]{
+  --paper:#fff9ef; --paper-dark:#eee2ca; --ink:#2a211d; --ink-soft:#68564b;
+  --rule:#b6a58b; --accent:#9e2529; --accent-soft:#d1a342; --good:#3c7158; --bad:#a83c2f;
+  --accent-wash:rgba(158,37,41,.08);
+  --banner-text:#332a25;
+  --surface-ink:#392d29; --button-ink:#392d29;
+  --splash-image:url("assets/hwu/loading_screen.png");
+  --banner-image:url("assets/hwu/banner_background.png");
+  --panel-image:url("assets/hwu/ui/panel.png");
+  --control-image:url("assets/hwu/ui/control.png");
+  --button-image:url("assets/hwu/ui/button.png");
+  --button-selected-image:url("assets/hwu/ui/button_selected.png");
+  --section-banner-image:url("assets/hwu/ui/section_banner.png");
+  --ui-font:"HWU UI";
+  --display-font:"HWU Display";
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#172333; --paper-dark:#202f40; --ink:#f4ecd8; --ink-soft:#c1b698;
+    --rule:#53616d; --accent:#ef7255; --accent-soft:#f0a355; --good:#8fcca4; --bad:#e2776a;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#172333; --paper-dark:#202f40; --ink:#f4ecd8; --ink-soft:#c1b698;
+  --rule:#53616d; --accent:#ef7255; --accent-soft:#f0a355; --good:#8fcca4; --bad:#e2776a;
+}
+:root[data-theme="dark"][data-game="hwu"]{
+  --paper:#201d1b; --paper-dark:#2c2622; --ink:#f7ecd9; --ink-soft:#c8b79c;
+  --rule:#655544; --accent:#e2b14e; --accent-soft:#f0cf75; --good:#8fcca4; --bad:#e2776a;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"])[data-game="hwu"]{
+    --paper:#201d1b; --paper-dark:#2c2622; --ink:#f7ecd9; --ink-soft:#c8b79c;
+    --rule:#655544; --accent:#e2b14e; --accent-soft:#f0cf75; --good:#8fcca4; --bad:#e2776a;
+  }
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0; background-color:var(--paper); color:var(--ink);
+  background-image:linear-gradient(rgba(255,249,237,.68),rgba(255,249,237,.76)),var(--splash-image);
+  background-position:center top; background-size:cover; background-attachment:fixed;
+  font-family:var(--ui-font),Arial,sans-serif; line-height:1.45;
+}
+a{color:var(--accent);}
+.wrap{max-width:900px; margin:0 auto; padding:2.5rem 1.5rem 6rem;}
+header{margin-bottom:1.5rem;}
+header .brand-art{
+  width:100%; max-width:568px; aspect-ratio:568 / 360; margin:0 auto 1rem;
+  background-image:var(--splash-image); background-size:100% 100%;
+  background-position:center;
+}
+header h1{
+  font-family:var(--display-font),Georgia,serif; font-weight:700;
+  font-size:clamp(1.25rem,3.8vw,1.8rem); line-height:1.25; margin:0 auto .15em;
+  letter-spacing:.015em; text-align:center; width:fit-content; max-width:100%;
+  padding:.35em 1em; color:var(--banner-text);
+  background-image:var(--banner-image); background-size:100% 100%;
+}
+header .tag{
+  color:var(--surface-ink); font-size:.95rem; max-width:56ch; margin:0 auto; padding:.8rem 1rem;
+  border:8px solid transparent; border-image:var(--control-image) 12 fill / 6px stretch;
+}
+.card{
+  background-color:transparent; color:var(--surface-ink);
+  border:12px solid transparent; border-image:var(--panel-image) 26 fill / 12px round;
+  padding:1.25rem 1.4rem; margin-bottom:1.25rem;
+}
+.dropzone{
+  display:block;
+  border:8px solid transparent; border-image:var(--control-image) 12 fill / 6px stretch;
+  padding:2.2rem 1rem; text-align:center; color:var(--surface-ink);
+  cursor:pointer; transition:filter .15s;
+}
+.dropzone:hover, .dropzone.drag{ filter:brightness(.96); }
+.dropzone input{display:none;}
+.dropzone .big{font-size:1.05rem; margin-bottom:.3em;}
+.dropzone .small{font-size:.85rem; color:var(--surface-ink);}
+.status{font-family:var(--mono); font-size:.82rem; margin-top:.6rem; white-space:pre-wrap;}
+.status.ok{color:var(--good);}
+.status.err{color:var(--bad);}
+.toolbar{display:flex; gap:.6rem; flex-wrap:wrap; align-items:center; margin:1rem 0 1.4rem;}
+button{
+  font-family:var(--ui-font),Arial,sans-serif; font-size:.82rem; padding:.3em .8em;
+  min-height:2.8em; border:10px solid transparent;
+  border-image:var(--button-image) 12 20 fill / 6px 10px stretch;
+  background-color:transparent; color:var(--button-ink); cursor:pointer;
+  transition:filter .15s;
+}
+button:hover{filter:brightness(1.08);}
+button.primary{border-image-source:var(--button-selected-image);}
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible{
+  outline:3px solid var(--accent); outline-offset:2px;
+}
+button:disabled{opacity:.4; cursor:not-allowed;}
+input[type=text], input[type=file]{ font-family:var(--ui-font),Arial,sans-serif; }
+.toolbar-icon{width:1.55rem; height:1.55rem; margin-right:.3rem; vertical-align:middle; object-fit:contain;}
+.filename-field{
+  font-family:var(--ui-font),Arial,sans-serif; font-size:.82rem; padding:.35em .65em;
+  border:10px solid transparent; border-image:var(--panel-image) 26 fill / 7px round;
+  background-color:transparent; color:var(--surface-ink); width:16em;
+}
+
+.section-title{
+  min-height:2rem; width:min(100%,22rem); display:inline-flex; align-items:center; padding:.3rem 1rem .3rem .65rem; margin:0 0 .65em;
+  background-image:var(--section-banner-image); background-size:100% 100%; color:#fff9ed;
+  font-family:var(--ui-font),Arial,sans-serif; text-transform:none; font-size:.78rem; letter-spacing:.02em;
+}
+.full-data-toggle{
+  width:100%; min-height:2rem; display:flex; align-items:center; justify-content:space-between; gap:.75rem;
+  padding:0; border:0; border-image:none; background:transparent; color:var(--ink); text-align:left;
+}
+.full-data-toggle .section-title{margin:0;}
+.full-data-indicator{width:2.4rem; height:2.4rem; object-fit:contain; flex:none;}
+.full-data-panel{padding-top:.8rem;}
+.quickgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:.7rem;}
+.qfield{display:flex; flex-direction:column; gap:.25em;}
+.qfield label{display:flex; align-items:center; gap:.4rem; font-family:var(--ui-font),Arial,sans-serif; font-size:.72rem; color:var(--surface-ink);}
+.friendly-section{margin-top:1.2rem;}
+.friendly-section-toggle{
+  width:100%; min-width:0; height:3.5rem; min-height:3.5rem; padding:0 .45rem;
+  display:inline-flex; align-items:center; justify-content:center; gap:.42rem;
+  text-align:center; font-size:.82rem;
+  border:10px solid transparent; border-image:var(--button-image) 12 20 fill / 6px 10px stretch;
+  background-color:transparent; color:var(--button-ink); cursor:pointer;
+}
+.friendly-section-icon{width:1.75rem; height:1.75rem; flex:none; object-fit:contain;}
+.friendly-section-toggle:hover{filter:brightness(1.08);}
+.friendly-section-toggle:focus-visible{outline:3px solid var(--accent); outline-offset:2px;}
+.friendly-section-toggle[aria-expanded="true"]{border-image-source:var(--button-selected-image);}
+.friendly-nav{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.45rem; align-items:center; margin:.6rem 0;}
+.friendly-section-content{padding-top:.6rem;}
+.friendly-filter{display:flex; flex-direction:column; gap:.25rem; max-width:24rem; margin:.4rem 0 .8rem; color:var(--surface-ink); font-size:.78rem;}
+.friendly-filter input,.friendly-card input[type=text]{
+  font-family:var(--ui-font),Arial,sans-serif; font-size:.85rem; padding:.3em .55em;
+  border:10px solid transparent; border-image:var(--panel-image) 26 fill / 7px round;
+  background-color:transparent; color:var(--surface-ink);
+}
+.friendly-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,19rem),1fr)); gap:.7rem;}
+.friendly-card{border:6px solid transparent; border-image:var(--control-image) 12 fill / 3px stretch; padding:.55rem .7rem; color:var(--surface-ink);}
+.friendly-card-heading{display:flex; align-items:center; gap:.65rem; margin-bottom:.35rem;}
+.friendly-card-heading.has-portrait{min-height:3.75rem;}
+.friendly-card-portrait{width:3.25rem; height:3.75rem; flex:none; object-fit:contain; object-position:center bottom;}
+.friendly-card-portrait.is-specific-art{width:5rem;}
+.friendly-card-portrait.is-placeholder{box-sizing:border-box; padding:.35rem; border-radius:.3rem; background:var(--paper-dark);}
+.friendly-card-heading-copy{min-width:0;}
+.friendly-card h3{margin:0; font-size:.95rem; overflow-wrap:anywhere;}
+.friendly-card .qfield{margin:.35rem 0;}
+.friendly-card .qfield label{font-size:.73rem;}
+.friendly-card .friendly-label{font-size:.73rem; color:var(--surface-ink);}
+.friendly-unavailable{font-size:.78rem; color:var(--ink-soft);}
+.friendly-card .qfield input[type=text]{width:100%; min-width:0;}
+.friendly-card .enum-select{width:100%; min-width:0;}
+.relationship-actions{display:flex; justify-content:flex-end; margin-top:.5rem;}
+.relationship-add{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,10rem),1fr)); gap:.65rem; align-items:end; margin:.5rem 0 .9rem;}
+.relationship-add .qfield{margin:0;}
+.relationship-add .enum-select{width:100%; min-width:0;}
+.relationship-add button{width:100%;}
+.friendly-empty{padding:.5rem 0; color:var(--ink-soft); font-size:.82rem;}
+.currency-icon{width:1.45rem; height:1.45rem; object-fit:contain; flex:none; image-rendering:auto;}
+.invalid-value{outline:2px solid var(--bad); outline-offset:1px;}
+.qfield input{
+  font-family:var(--ui-font),Arial,sans-serif; font-size:.95rem; padding:.3em .55em;
+  border:10px solid transparent; border-image:var(--panel-image) 26 fill / 7px round;
+  background-color:transparent; color:var(--surface-ink);
+}
+.enum-select{
+  flex:1; min-width:12em; font-family:var(--ui-font),Arial,sans-serif; font-size:.83rem; padding:.25em .5em;
+  border:10px solid transparent; border-image:var(--panel-image) 26 fill / 7px round;
+  background-color:transparent; color:var(--surface-ink);
+}
+.enum-select.changed, .qfield input.changed{filter:brightness(.94);}
+
+details.node{
+  border-left:2px solid var(--rule); margin:.15rem 0 .15rem .1rem; padding-left:.75rem;
+}
+details.node[open] > summary{color:var(--accent);}
+summary{
+  cursor:pointer; font-family:var(--ui-font),Arial,sans-serif; font-size:.83rem; padding:.25em 0;
+  display:flex; align-items:center; gap:.5em;
+}
+summary .count{color:var(--ink-soft); font-size:.75rem;}
+summary::-webkit-details-marker{color:var(--ink-soft);}
+.row{
+  display:flex; align-items:center; gap:.6em; padding:.22em 0; font-family:var(--ui-font),Arial,sans-serif; font-size:.83rem;
+  flex-wrap:wrap;
+}
+.row .lbl{ color:var(--surface-ink); min-width:11em; flex-shrink:0; }
+.row .fnum{ color:var(--rule); font-size:.72rem; }
+.row input[type=text]{
+  flex:1; min-width:8em; font-family:var(--ui-font),Arial,sans-serif; font-size:.83rem; padding:.25em .5em;
+  border:10px solid transparent; border-image:var(--panel-image) 26 fill / 7px round;
+  background-color:transparent; color:var(--surface-ink);
+}
+.row input.changed{filter:brightness(.94);}
+.row textarea{
+  flex:1; min-width:10em; font-family:var(--ui-font),Arial,sans-serif; font-size:.75rem; padding:.3em .5em;
+  border:10px solid transparent; border-image:var(--panel-image) 26 fill / 7px round;
+  background-color:transparent; color:var(--surface-ink);
+  min-height:3em; resize:vertical;
+}
+.row .del{
+  font-family:var(--ui-font),Arial,sans-serif; font-size:.72rem; color:var(--button-ink);
+  border-image-source:var(--button-selected-image); padding:.05em .35em; cursor:pointer;
+}
+.row .dup{
+  font-family:var(--ui-font),Arial,sans-serif; font-size:.72rem; color:var(--button-ink);
+  padding:.05em .35em; cursor:pointer;
+}
+.repeat-item{border-top:1px dashed var(--rule); padding-top:.35em; margin-top:.35em;}
+.repeat-item:first-child{border-top:none; padding-top:0; margin-top:0;}
+.add-row{font-family:var(--ui-font),Arial,sans-serif; font-size:.75rem; color:var(--surface-ink); padding:.3em 0;}
+.badge{
+  display:inline-block; font-family:var(--ui-font),Arial,sans-serif; font-size:.7rem; padding:.1em .5em;
+  background-image:var(--button-image); background-size:100% 100%; color:var(--button-ink); margin-left:.4em;
+}
+.badge.warn{background-image:var(--button-selected-image); color:var(--button-ink);}
+.hint{font-size:.82rem; color:var(--surface-ink); margin-top:.3em;}
+footer{
+  color:var(--surface-ink); font-size:.78rem; text-align:center; margin-top:3rem; padding:.75rem;
+  border:8px solid transparent; border-image:var(--control-image) 12 fill / 6px stretch;
+}
+.hidden{display:none !important;}
+dialog{
+  max-width:min(32rem,calc(100vw - 2rem)); border:12px solid transparent;
+  border-image:var(--panel-image) 26 fill / 12px round;
+  background-color:transparent; color:var(--surface-ink);
+  padding:1.25rem 1.4rem;
+}
+dialog::backdrop{background:rgba(15,18,22,.58);}
+dialog h2{margin:.1rem 0 .6rem; font-size:1.25rem;}
+.searchbar{margin-bottom:.8rem;}
+.searchbar input{
+  width:100%; font-family:var(--ui-font),Arial,sans-serif; font-size:.85rem; padding:.3em .65em;
+  border:10px solid transparent; border-image:var(--panel-image) 26 fill / 7px round;
+  background-color:transparent; color:var(--surface-ink);
+}
+.summary-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(145px,1fr)); gap:.7rem;}
+.summary-item{border:6px solid transparent; border-image:var(--control-image) 12 fill / 3px stretch; padding:.25rem .6rem; color:var(--surface-ink);}
+.summary-item .value{font-family:var(--ui-font),Arial,sans-serif; font-size:.9rem; overflow-wrap:anywhere;}
+.summary-item .label{display:flex; align-items:center; gap:.4rem; font-size:.75rem; color:var(--surface-ink);}
+.search-results{margin-top:.7rem; font-family:var(--ui-font),Arial,sans-serif; font-size:.78rem;}
+.search-result{display:block; width:100%; text-align:left; margin:.25rem 0; overflow-wrap:anywhere;}
+.search-result .result-path{display:block;}
+.search-result .result-value{display:block; color:var(--button-ink); font-size:.72rem;}
+mark{background-image:var(--button-selected-image); background-size:100% 100%; color:inherit;}
+@media (max-width:600px){
+  .wrap{padding:1rem .75rem 3rem;}
+  header .brand-art{margin-bottom:.6rem;}
+  header h1{font-size:1.6rem;}
+  .card{padding:1rem;}
+}
+@media (max-width:700px){.friendly-nav{grid-template-columns:repeat(2,minmax(0,1fr));}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand-art" aria-hidden="true"></div>
+    <h1 id="gameTitle">High School Story Save Editor</h1>
+    <div class="tag" id="gameTag">Select an HSS or HWU <code>.sav</code> file. The game and matching visual theme are detected locally in your browser.</div>
+  </header>
+
+  <div class="card" id="dropcard">
+    <label class="dropzone" id="dropzone" for="fileInput">
+      <div class="big">Drop an HSS or HWU <code>.sav</code> file here, or click to choose one</div>
+      <div class="small">The save is checked against both game profiles; it never leaves this page</div>
+      <input type="file" id="fileInput" accept=".sav">
+    </label>
+    <div class="status" id="status"></div>
+  </div>
+
+  <div id="editorArea" class="hidden">
+    <div class="toolbar">
+      <button class="primary" id="downloadBtn"><img class="toolbar-icon" src="assets/hss/ui/icons/button_done.png" data-toolbar-icon="button_done" alt="" aria-hidden="true">Download edited save</button>
+      <input class="filename-field" id="outName" type="text" value="LOCAL.hss.sav">
+      <button class="ghost" id="undoBtn" type="button" disabled title="Undo the most recent edit">Undo</button>
+      <button class="ghost" id="revertBtn" type="button" disabled title="Restore the loaded save"><img class="toolbar-icon" src="assets/hss/ui/icons/button_cancel.png" data-toolbar-icon="button_cancel" alt="" aria-hidden="true">Revert all</button>
+      <button class="ghost" id="reloadBtn">Load a different file</button>
+      <button class="ghost" id="expandAllBtn"><img class="toolbar-icon" src="assets/hss/ui/icons/button_HUD_plus.png" data-toolbar-icon="button_HUD_plus" alt="" aria-hidden="true">Expand all</button>
+      <button class="ghost" id="collapseAllBtn"><img class="toolbar-icon" src="assets/hss/ui/icons/button_hide.png" data-toolbar-icon="button_hide" alt="" aria-hidden="true">Collapse all</button>
+      <span class="hint" id="changeCount" aria-live="polite"></span>
+    </div>
+
+    <div class="card" id="quickCard">
+      <div class="section-title">Quick fields</div>
+      <div class="quickgrid" id="quickGrid"></div>
+      <div class="hint" id="identityHint"></div>
+    </div>
+
+    <div class="card" id="friendlyEditors">
+      <div class="section-title">Edit your game</div>
+      <p class="hint">Edit classmates, campus details, and relationships here. Less familiar save data is still available in Full save data below.</p>
+      <nav class="friendly-nav" aria-label="Game edit sections">
+        <button class="friendly-section-toggle" id="classmatesToggle" type="button" aria-expanded="false" aria-controls="classmatesPanel"><img class="friendly-section-icon" src="assets/hss/ui/icons/category_classmates.png" data-category-icon="classmates" alt="" aria-hidden="true">Classmates</button>
+        <button class="friendly-section-toggle" id="buildingsToggle" type="button" aria-expanded="false" aria-controls="buildingsPanel"><img class="friendly-section-icon" src="assets/hss/ui/icons/category_buildings.png" data-category-icon="buildings" alt="" aria-hidden="true">Campus buildings</button>
+        <button class="friendly-section-toggle" id="plotsToggle" type="button" aria-expanded="false" aria-controls="plotsPanel"><img class="friendly-section-icon" src="assets/hss/ui/icons/category_plots.png" data-category-icon="plots" alt="" aria-hidden="true">Campus plots</button>
+        <button class="friendly-section-toggle" id="relationshipsToggle" type="button" aria-expanded="false" aria-controls="relationshipsPanel"><img class="friendly-section-icon" src="assets/hss/ui/icons/category_relationships.png" data-category-icon="relationships" alt="" aria-hidden="true">Relationships</button>
+      </nav>
+      <section class="friendly-section">
+        <div class="friendly-section-content hidden" id="classmatesPanel" hidden>
+          <label class="friendly-filter" for="classmateFilter">Find a classmate
+            <input id="classmateFilter" type="search" placeholder="Search by name or type">
+          </label>
+          <div class="friendly-grid" id="classmateGrid" aria-live="polite"></div>
+        </div>
+      </section>
+      <section class="friendly-section">
+        <div class="friendly-section-content hidden" id="buildingsPanel" hidden>
+          <div class="friendly-grid" id="buildingGrid" aria-live="polite"></div>
+        </div>
+      </section>
+      <section class="friendly-section">
+        <div class="friendly-section-content hidden" id="plotsPanel" hidden>
+          <div class="friendly-grid" id="plotGrid" aria-live="polite"></div>
+        </div>
+      </section>
+      <section class="friendly-section">
+        <div class="friendly-section-content hidden" id="relationshipsPanel" hidden>
+          <p class="hint">Dating is represented by a relationship between two characters. Set its game-specific status and strength progress; five strength increments separate each status, and the final status has no further progress. Completing a date advances an existing relationship by one strength. Ending a relationship removes that pair; undo is available. Date history is unchanged.</p>
+          <div class="relationship-add" id="relationshipAddForm"></div>
+          <label class="friendly-filter" for="relationshipFilter">Find a relationship
+            <input id="relationshipFilter" type="search" placeholder="Search by either character">
+          </label>
+          <div class="friendly-grid" id="relationshipGrid" aria-live="polite"></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="card" id="summaryCard" aria-live="polite">
+      <div class="section-title">Save overview · read only</div>
+      <div class="summary-grid" id="summaryGrid"></div>
+      <div class="hint" id="summaryHint">Identity and token values are intentionally masked here.</div>
+    </div>
+
+    <div class="card searchbar">
+      <div class="section-title">Find fields</div>
+      <input type="text" id="searchBox" placeholder="Search labels, paths, or values (e.g. coins, characters[0].type, Draculaura)">
+      <div class="search-results" id="searchResults" aria-live="polite"></div>
+    </div>
+
+    <div class="card" id="treeCard">
+      <button class="full-data-toggle" id="fullDataToggle" type="button" aria-expanded="false" aria-controls="fullDataPanel">
+        <span class="section-title">Full save data</span>
+        <img class="full-data-indicator" id="fullDataIndicator" src="assets/hss/ui/icons/button_HUD_plus.png" alt="" aria-hidden="true">
+      </button>
+      <div class="full-data-panel hidden" id="fullDataPanel" hidden>
+        <div id="tree"></div>
+      </div>
+    </div>
+  </div>
+
+  <dialog id="formatDialog" aria-labelledby="formatDialogTitle">
+    <form method="dialog">
+      <h2 id="formatDialogTitle">Save format could not be distinguished</h2>
+      <p>Both game profiles validated this file. Choose which profile should be used for editing and download.</p>
+      <div class="toolbar">
+        <button value="hss">High School Story</button>
+        <button value="hwu">Hollywood U</button>
+        <button value=""><img class="toolbar-icon" src="assets/hss/ui/icons/button_cancel.png" data-toolbar-icon="button_cancel" alt="" aria-hidden="true">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <footer>HSS and HWU schemas are handled locally. Unrecognized fields are preserved byte-for-byte even if they have no friendly label.</footer>
+</div>
+
+<script>
+/* ---------------------------------------------------------------------- *
+ * Crypto: AES-256-CBC with the fixed static key, via Web Crypto (which
+ * implements PKCS#7 padding for AES-CBC natively).
+ * ---------------------------------------------------------------------- */
+const GAME_PROFILES = {
+  hss:{
+    id:'hss', label:'High School Story', shortLabel:'HSS', version:'v5.4.0',
+    defaultFilename:'LOCAL.hss.sav',
+    keyHex:'856fbf159dc23d5563ec07c831b19400348aec43ba68ac480c7f25a3801b57ac',
+  },
+  hwu:{
+    id:'hwu', label:'Hollywood U', shortLabel:'HWU', version:'v3.8.0',
+    defaultFilename:'LOCAL.hwu.sav',
+    keyHex:'eefd8fc4ce6e36d37e4769b46ac114a6d993947a2dbdca717e7aa1362edc9327',
+  },
+};
+function hexToBytes(hex){
+  const out = new Uint8Array(hex.length/2);
+  for(let i=0;i<out.length;i++) out[i] = parseInt(hex.substr(i*2,2),16);
+  return out;
+}
+let currentProfile = null;
+const aesKeys = new Map();
+async function getKey(profile){
+  if(aesKeys.has(profile.id)) return aesKeys.get(profile.id);
+  const key = await crypto.subtle.importKey("raw", hexToBytes(profile.keyHex), {name:"AES-CBC"}, false, ["encrypt","decrypt"]);
+  aesKeys.set(profile.id,key);
+  return key;
+}
+async function decryptSave(fileBytes,profile){
+  if(fileBytes.length < 32 || fileBytes.length % 16 !== 0)
+    throw new Error("Not a save file: size "+fileBytes.length+" is too small or not a multiple of 16.");
+  const iv = fileBytes.slice(0,16);
+  const ct = fileBytes.slice(16);
+  const key = await getKey(profile);
+  let pt;
+  try{
+    pt = await crypto.subtle.decrypt({name:"AES-CBC", iv}, key, ct);
+  }catch(e){
+    throw new Error("Decryption failed with the "+profile.shortLabel+" key (invalid padding).");
+  }
+  return new Uint8Array(pt);
+}
+async function encryptSave(plainBytes,profile){
+  const iv = crypto.getRandomValues(new Uint8Array(16));
+  const key = await getKey(profile);
+  const ct = await crypto.subtle.encrypt({name:"AES-CBC", iv}, key, plainBytes);
+  const out = new Uint8Array(16 + ct.byteLength);
+  out.set(iv,0); out.set(new Uint8Array(ct),16);
+  return out;
+}
+
+/* ---------------------------------------------------------------------- *
+ * Generic protobuf (proto2, wire-format) reader/writer.
+ * Every field is preserved on a full parse->edit->serialize round trip,
+ * even fields with no schema entry (they just show as "field N").
+ * ---------------------------------------------------------------------- */
+function readVarint(buf, pos){
+  let result = 0n, shift = 0n, p = pos;
+  while(true){
+    const b = buf[p]; p++;
+    result |= BigInt(b & 0x7f) << shift;
+    if(!(b & 0x80)) break;
+    shift += 7n;
+  }
+  return [result, p];
+}
+function writeVarint(val){
+  val = BigInt(val);
+  if(val < 0n) val = val & 0xFFFFFFFFFFFFFFFFn; // treat as unsigned 64
+  const bytes = [];
+  do{
+    let b = Number(val & 0x7Fn);
+    val >>= 7n;
+    if(val !== 0n) b |= 0x80;
+    bytes.push(b);
+  }while(val !== 0n);
+  return new Uint8Array(bytes);
+}
+function utf8Decode(bytes){
+  try{
+    const s = new TextDecoder("utf-8",{fatal:true}).decode(bytes);
+    // printable check: reject if it round-trips with control chars other than \n\r\t
+    for(const ch of s){
+      const c = ch.codePointAt(0);
+      if(c < 0x20 && ch !== "\n" && ch !== "\r" && ch !== "\t") return null;
+    }
+    return s;
+  }catch(e){ return null; }
+}
+function utf8Encode(str){ return new TextEncoder().encode(str); }
+function bytesToHex(bytes){
+  return Array.from(bytes).map(b=>b.toString(16).padStart(2,"0")).join(" ");
+}
+function hexToBytesLoose(hex){
+  const clean = hex.replace(/[^0-9a-fA-F]/g,"");
+  const out = new Uint8Array(Math.floor(clean.length/2));
+  for(let i=0;i<out.length;i++) out[i] = parseInt(clean.substr(i*2,2),16);
+  return out;
+}
+
+let uidCounter = 1;
+function nextUid(){ return uidCounter++; }
+
+// Parses a message body into an ordered array of "entry" objects.
+// entry: {uid, field, wire, ...typeSpecific}
+// wire 0: {mode:'varint', value: BigInt}
+// wire 2: {mode:'string', str} | {mode:'msg', children:[entries]} | {mode:'bytes', bytes:Uint8Array}
+// wire 1/5: {mode:'fixed', bytes:Uint8Array}
+function parseMessage(buf){
+  const entries = [];
+  let pos = 0;
+  const n = buf.length;
+  while(pos < n){
+    const tagStart = pos;
+    let tag; [tag,pos] = readVarint(buf,pos);
+    const fieldNum = Number(tag >> 3n);
+    const wire = Number(tag & 7n);
+    const entry = {uid: nextUid(), field: fieldNum};
+    if(wire === 0){
+      let v; [v,pos] = readVarint(buf,pos);
+      entry.wire = 0; entry.mode = 'varint'; entry.value = v;
+    }else if(wire === 2){
+      let ln; [ln,pos] = readVarint(buf,pos);
+      ln = Number(ln);
+      if(pos+ln > n) throw new Error("Truncated field "+fieldNum+" at byte "+tagStart);
+      const chunk = buf.slice(pos, pos+ln);
+      pos += ln;
+      entry.wire = 2;
+      // try submessage first if it looks structured & non-trivial, else string, else bytes
+      const asMsg = tryParseAsMessage(chunk);
+      const asStr = utf8Decode(chunk);
+      if(asStr !== null && (asMsg === null || asStr.length > 0)){
+        entry.mode = 'string'; entry.str = asStr; entry._rawFallback = chunk;
+      }else if(asMsg !== null){
+        entry.mode = 'msg'; entry.children = asMsg;
+      }else{
+        entry.mode = 'bytes'; entry.bytes = chunk;
+      }
+    }else if(wire === 1){
+      entry.wire = 1; entry.mode = 'fixed'; entry.bytes = buf.slice(pos,pos+8); pos += 8;
+    }else if(wire === 5){
+      entry.wire = 5; entry.mode = 'fixed'; entry.bytes = buf.slice(pos,pos+4); pos += 4;
+    }else{
+      throw new Error("Unsupported wire type "+wire+" at byte "+tagStart);
+    }
+    entries.push(entry);
+  }
+  return entries;
+}
+function tryParseAsMessage(buf){
+  if(buf.length === 0) return null;
+  try{
+    const entries = parseMessage(buf);
+    if(entries.length === 0) return null;
+    // sanity: field numbers should be small-ish and increasing-ish for real messages
+    for(const e of entries){ if(e.field <= 0 || e.field > 536870911) return null; }
+    return entries;
+  }catch(e){ return null; }
+}
+function serializeMessage(entries){
+  const parts = [];
+  for(const e of entries){
+    const tag = (BigInt(e.field) << 3n) | BigInt(e.wire);
+    parts.push(writeVarint(tag));
+    if(e.wire === 0){
+      parts.push(writeVarint(e.value));
+    }else if(e.wire === 2){
+      let content;
+      if(e.mode === 'msg'){ content = serializeMessage(e.children); }
+      else if(e.mode === 'string'){ content = utf8Encode(e.str); }
+      else { content = e.bytes; }
+      parts.push(writeVarint(content.length));
+      parts.push(content);
+    }else{
+      parts.push(e.bytes);
+    }
+  }
+  let total = 0; for(const p of parts) total += p.length;
+  const out = new Uint8Array(total);
+  let off = 0;
+  for(const p of parts){ out.set(p,off); off += p.length; }
+  return out;
+}
+
+function bytesEqual(left,right){
+  if(left.length!==right.length) return false;
+  for(let i=0;i<left.length;i++) if(left[i]!==right[i]) return false;
+  return true;
+}
+function isValidSaveProfile(entries,plainBytes){
+  const gameState=findChild(entries,2);
+  if(!gameState||gameState.mode!=='msg') return false;
+  const player=findChild(gameState.children,3);
+  if(!player||player.mode!=='msg') return false;
+  return bytesEqual(serializeMessage(entries),plainBytes);
+}
+async function validateWithProfile(fileBytes,profile){
+  try{
+    const plainBytes=await decryptSave(fileBytes,profile);
+    uidCounter=1;
+    const entries=parseMessage(plainBytes);
+    if(!isValidSaveProfile(entries,plainBytes)){
+      return {profile,valid:false,error:'The decrypted data did not match the expected save structure.'};
+    }
+    return {profile,valid:true,plainBytes,entries};
+  }catch(error){
+    return {profile,valid:false,error:error.message};
+  }
+}
+function requestAmbiguousProfile(){
+  const dialog=el('formatDialog');
+  if(typeof dialog.showModal!=='function'){
+    throw new Error('This browser cannot show the format choice required for an ambiguous save.');
+  }
+  return new Promise(resolve=>{
+    const onClose=()=>{
+      dialog.removeEventListener('close',onClose);
+      dialog.removeEventListener('cancel',onCancel);
+      resolve(dialog.returnValue||null);
+    };
+    const onCancel=event=>{
+      event.preventDefault();
+      dialog.returnValue='';
+      dialog.close();
+    };
+    dialog.addEventListener('close',onClose,{once:true});
+    dialog.addEventListener('cancel',onCancel,{once:true});
+    dialog.showModal();
+  });
+}
+async function identifySave(fileBytes){
+  if(fileBytes.length<32||fileBytes.length%16!==0){
+    throw new Error('Not a valid encrypted save: its size is too small or not a multiple of 16 bytes.');
+  }
+  const results=await Promise.all(Object.values(GAME_PROFILES).map(profile=>validateWithProfile(fileBytes,profile)));
+  const matches=results.filter(result=>result.valid);
+  if(matches.length===0){
+    throw new Error('Neither the HSS nor HWU profile could decrypt and validate this save. Check that it is an unmodified supported save file.');
+  }
+  if(matches.length===1) return matches[0];
+  const choice=await requestAmbiguousProfile();
+  const selected=matches.find(result=>result.profile.id===choice);
+  if(!selected) throw new Error('Save profile choice was cancelled; no file was loaded.');
+  return selected;
+}
+
+/* ---------------------------------------------------------------------- *
+ * Friendly schema hints shared by HSS/HWU ClientGameState profiles.
+ * Anything not listed here still round-trips fine, just shown as "field N".
+ * ---------------------------------------------------------------------- */
+function enumRange(start, symbols){
+  return Object.fromEntries(symbols.trim().split(/\s+/).map((symbol,index)=>[start+index,symbol]));
+}
+const CHARACTER_TYPE_ENUM = {
+  ...enumRange(0,`UNASSIGNED JOCK NERD PREP ARTIST SLACKER GAMER CHEERLEADER DANCER SKATEBOARDER STUDENT_GOV FILMMAKER ACTOR HIPSTER HOMECOMING EMO CLASS_CLOWN VAMPIRE WALLFLOWER MUSICIAN GLEE MARCHING_BAND HIP_HOP DJ VIRTUOSO HEARTTHROB MOVIESTAR REBEL MASCOT HACKER PARKOUR PROM CLUB STREETARTIST PUNKROCK SURFER COUNTRY_TYPE GOTH WEREWOLF WRITER CLASS_PREZ VARSITY ANIME_CLUB YACHT_CLUB YEARBOOK EARTH_CLUB AUTO_CLUB FAST_FOOD JAZZ_CLUB CELEBRITY_HSS MONSTER_HIGH ELF_TYPE FOODIE OUTDOOR EQUESTRIAN ROCK_CLIMBER SCOUT MUSIC_FESTIVAL RESERVED_40 RESERVED_41 RESERVED_42`),
+  ...enumRange(1000,`MOVIE_STAR DIRECTOR FASHIONISTA AGENT REALITY_TV MAKE_UP MODEL CELEBUTANTE ACTION_HERO COSTUME_DESIGNER POP_STAR COMPOSER FAIRY_TALE STUNT SPECIAL_FX DIVA AWARD_HOST MO_CAP MAGICIAN SCREENWRITER CELEB_BLOGGER MUSIC_MOGUL BODYGUARD BROADWAY FANTASY STUNT_DRIVER SUPERHERO_TYPE CELEB_ATHLETE MARTIAL_ARTS CELEB_CHEF TRAINER CELEBRITY_HWU ZOMBIE VAMPIRE_HWU HUNTER GHOST COMEDIAN FIGURE_SKATER ELF_HWU_TYPE ROMANTIC_LEAD FANFICTION_WRITER CRITIC RAPPER YOU_TUBER CELEBRITY_BETHANY PAPARAZZI FRANKENSTEIN RESERVED_1047 RESERVED_1048 RESERVED_1049 RESERVED_1050`),
+};
+const GENDER_ENUM = {0:'FEMALE',1:'MALE'};
+const BUILDING_TYPE_ENUM = {
+  ...enumRange(0,`UNKNOWN ADMISSIONS CLASSROOM DORM_JOCK DORM_NERD DORM_PREP DORM_SLACKER DORM_ARTIST LIBRARY MATCH_MAKER PARTY DORM_MUSICIAN DORM_REBEL POLLING DORM_CLASS_PREZ RING_GENERATOR HSS_QUEST_DATING HWU_MATCH_DATING DORM_MONSTER_HIGH DORM_OUTDOOR BUILDING_RESERVED_10 BUILDING_RESERVED_11 BUILDING_RESERVED_12 BUILDING_RESERVED_13 BUILDING_RESERVED_14 BUILDING_RESERVED_15 BUILDING_RESERVED_16 BUILDING_RESERVED_17 BUILDING_RESERVED_18 BUILDING_RESERVED_19`),
+  ...enumRange(1000,`DORM_MOVIE_STAR DORM_DIRECTOR DORM_FASHIONISTA WORKSHOP DORM_POP_STAR DORM_STUNT DORM_PLATINUM DORM_SCREENWRITER DORM_CELEB_ATHLETE DORM_ZOMBIE BUILDING_RESERVED_1010 BUILDING_RESERVED_1011 BUILDING_RESERVED_1012 BUILDING_RESERVED_1013 BUILDING_RESERVED_1014 BUILDING_RESERVED_1015 BUILDING_RESERVED_1016 BUILDING_RESERVED_1017 BUILDING_RESERVED_1018 BUILDING_RESERVED_1019`),
+  ...enumRange(100,`SMALL_BUSH ASIAN_LION BAKE_SALE_TABLE BALLOONS_GOLD_SILVER BENCH_PARK BIKE_RACK BOX_OF_PUPPIES DINOSAUR_SKELETON FIREPIT FLOWER_BOX_FAT_SHORT FOOD_TRUCK FOUNTAIN GENERIC_TREE HEDGE_LARGE LION_STATUE PALM_TREE PICNIC_TABLE PORTAPOTTY POTTED_PLANT SNACK_CART TOPIARY_ELEPHANT WATERFALL ASPHALT_TILE BRICK_TILE COBBLESTONE_TILE GOLD_TILE STEPPINGSTONE_TILE CUPCAKE_CART ROSE_TRELLIS CARRIAGE LAMPPOST PUMPKIN_PATCH PARADE_FLOAT CYBERSMILE GINGERBREAD_HOUSE XMAS_TREE CLOCK_TOWER FOUNTAIN_CUPID MAYPOLE DECORATION_RESERVED_6 DECORATION_RESERVED_7 DECORATION_RESERVED_8 DECORATION_RESERVED_9 DECORATION_RESERVED_10 DECORATION_RESERVED_11 DECORATION_RESERVED_12 DECORATION_RESERVED_13 DECORATION_RESERVED_14 DECORATION_RESERVED_15 DECORATION_RESERVED_16 DECORATION_RESERVED_17 DECORATION_RESERVED_18 DECORATION_RESERVED_19`),
+  ...enumRange(1039,`SPOTLIGHT UMBRELLA_TABLE RED_CARPET_TILE MARBLE_TILE STAR_TILE MOVIE_LIGHT DIRECTOR_CHAIR WALL_PILLAR WALL_BRICK VELVET_ROPE AWARD_STATUE HEART_TUB LIMO_FRONT LIMO_BACK SWIMMING_POOL LIMO_MIDDLE_1 DECORATION_RESERVED_1055 DECORATION_RESERVED_1056 DECORATION_RESERVED_1057 DECORATION_RESERVED_1058 DECORATION_RESERVED_1059 DECORATION_RESERVED_1060 DECORATION_RESERVED_1061 DECORATION_RESERVED_1062 DECORATION_RESERVED_1063 DECORATION_RESERVED_1064 DECORATION_RESERVED_1065 DECORATION_RESERVED_1066 DECORATION_RESERVED_1067 DECORATION_RESERVED_1068 DECORATION_RESERVED_1069 DECORATION_RESERVED_1070`),
+};
+const BUILDING_ART_BY_GAME = {
+  hss:{
+    ADMISSIONS:'admissions_1', CLASSROOM:'classroom_1', DORM_JOCK:'dorm_jock_1',
+    DORM_NERD:'dorm_nerd_1', DORM_PREP:'dorm_prep_1', DORM_SLACKER:'dorm_slacker_1',
+    DORM_ARTIST:'dorm_artist_1', LIBRARY:'library', MATCH_MAKER:'matchmaker', PARTY:'party',
+    DORM_MUSICIAN:'dorm_musician_1', POLLING:'polling_building',
+    DORM_CLASS_PREZ:'dorm_class_pres_1', DORM_MONSTER_HIGH:'dorm_monster_high_1',
+    DORM_OUTDOOR:'dorm_outdoor_1',
+  },
+  hwu:{
+    ADMISSIONS:'admissions_1', MATCH_MAKER:'matchmaker', PARTY:'party', WORKSHOP:'workshop',
+    DORM_MOVIE_STAR:'dorm_movie_star_1', DORM_DIRECTOR:'dorm_director_1',
+    DORM_FASHIONISTA:'dorm_fashionista_1', DORM_POP_STAR:'dorm_pop_star_1',
+    DORM_STUNT:'dorm_stunt_1', DORM_ZOMBIE:'dorm_monster',
+  },
+};
+function isDecorationType(typeValue){
+  const value=Number(typeValue);
+  return (value>=100&&value<=139)||(value>=1039&&value<=1069);
+}
+const DECORATION_ART_BY_GAME = {
+  hss:{
+    ASIAN_LION:'asian_lion', BAKE_SALE_TABLE:'bake_sale_table',
+    BALLOONS_GOLD_SILVER:'balloons_gold_silver', BENCH_PARK:'bench_park01',
+    BIKE_RACK:'bike_rack', BOX_OF_PUPPIES:'box_of_puppies',
+    DINOSAUR_SKELETON:'dinosaur_skeleton', FIREPIT:'firepit',
+    FLOWER_BOX_FAT_SHORT:'flower_box_fat_short', FOOD_TRUCK:'food_truck',
+    FOUNTAIN:'fountain', GENERIC_TREE:'generic_tree', HEDGE_LARGE:'hedge_lg',
+    LION_STATUE:'lion_statue', PALM_TREE:'palmtree', PICNIC_TABLE:'picnic_table',
+    PORTAPOTTY:'portapotty', POTTED_PLANT:'potted_plant', SNACK_CART:'snack_cart',
+    TOPIARY_ELEPHANT:'topiary_elephant', WATERFALL:'waterfall',
+    ASPHALT_TILE:'asphalt_tile', BRICK_TILE:'brick_tile',
+    COBBLESTONE_TILE:'cobblestone_tile', GOLD_TILE:'gold_tile',
+    STEPPINGSTONE_TILE:'steppingstone_tile', CUPCAKE_CART:'cupcake_cart',
+    ROSE_TRELLIS:'rose_trellis', CARRIAGE:'carriage', LAMPPOST:'lamppost',
+    PUMPKIN_PATCH:'pumpkin_patch', PARADE_FLOAT:'parade_float',
+    CYBERSMILE:'cybersmile', GINGERBREAD_HOUSE:'gingerbread_house',
+    XMAS_TREE:'xmas_tree', CLOCK_TOWER:'clock_tower',
+    FOUNTAIN_CUPID:'fountain_cupid', MAYPOLE:'maypole',
+  },
+  hwu:{
+    BAKE_SALE_TABLE:'bake_sale_table', BALLOONS_GOLD_SILVER:'balloons_gold_silver',
+    BENCH_PARK:'bench_park01', BIKE_RACK:'bike_rack',
+    DINOSAUR_SKELETON:'dinosaur_skeleton', FLOWER_BOX_FAT_SHORT:'flower_box_fat_short',
+    FOOD_TRUCK:'food_truck', FOUNTAIN:'fountain', GENERIC_TREE:'generic_tree',
+    HEDGE_LARGE:'hedge_lg', LION_STATUE:'lion_statue', PALM_TREE:'palmtree',
+    PICNIC_TABLE:'picnic_table', PORTAPOTTY:'portapotty', POTTED_PLANT:'potted_plant',
+    SNACK_CART:'snack_cart', ASPHALT_TILE:'asphalt_tile', BRICK_TILE:'brick_tile',
+    COBBLESTONE_TILE:'cobblestone_tile', GOLD_TILE:'gold_tile',
+    STEPPINGSTONE_TILE:'steppingstone_tile', ROSE_TRELLIS:'rose_trellis',
+    LAMPPOST:'lamppost', SPOTLIGHT:'spotlight', UMBRELLA_TABLE:'umbrella_table',
+    RED_CARPET_TILE:'red_carpet_tile', MARBLE_TILE:'marble_tile',
+    STAR_TILE:'star_tile', MOVIE_LIGHT:'movie_light', DIRECTOR_CHAIR:'director_chair',
+    WALL_PILLAR:'wall_pillar', WALL_BRICK:'wall_brick', VELVET_ROPE:'velvet_rope01',
+    AWARD_STATUE:'award_statue', HEART_TUB:'heart_tub', LIMO_FRONT:'limo_front',
+    LIMO_BACK:'limo_back', SWIMMING_POOL:'swimming_pool', LIMO_MIDDLE_1:'limo_middle_1',
+  },
+};
+const RELATIONSHIP_LEVEL_CONFIG_BY_GAME = {
+  hss:[
+    {name:'Flirting',strength:0},
+    {name:'Crushing',strength:5},
+    {name:'Online Official',strength:10},
+    {name:'Sweethearts',strength:15},
+    {name:'In Love',strength:20},
+    {name:'Head Over Heels',strength:25},
+    {name:'Over The Moon',strength:30},
+  ],
+  hwu:[
+    {name:'Meeting Cute',strength:0},
+    {name:'Having Chemistry',strength:5},
+    {name:'Seen Together',strength:10},
+    {name:'Hooking Up',strength:15},
+    {name:'In The Spotlight',strength:20},
+  ],
+};
+const CLASSMATE_LEVEL_CONFIG_BY_GAME = {
+  hwu:{
+    skillRequired:Array.from({length:100},(_,level)=>level),
+  },
+  hss:{
+    skillRequired:[0,5,30,130,630,3130,8130,18130,33130,53130],
+  },
+};
+const SCHEMA = {
+  ClientGameState: {
+    1:{n:'server_version'}, 2:{n:'game_state', m:'GameState'}, 3:{n:'server_client_version'},
+    4:{n:'time_played_since_last_sync'}, 8:{n:'server_info', m:'ServerInfo'},
+    9:{n:'saved_time', fmt:'timestamp'}, 10:{n:'multiple_devices_detected', fmt:'bool'},
+    19:{n:'server_asset_version'}, 22:{n:'last_played_asset_version'},
+    20:{n:'last_seen_motd_message_version'}, 21:{n:'last_seen_update_message_version'},
+  },
+  ServerInfo: {1:{n:'secret_token'},2:{n:'session_token'},3:{n:'signing_key'},4:{n:'debug_pixelberry_id'},5:{n:'alt_pixelberry_id'}},
+  GameState: {
+    1:{n:'config_version'}, 2:{n:'client_version'}, 3:{n:'player', m:'Player'},
+    4:{n:'characters', m:'Character', repeated:true}, 5:{n:'player_quest_state', repeated:true}, 6:{n:'buildings', m:'Building', repeated:true},
+    7:{n:'store_state', m:'StoreState'}, 8:{n:'properties', m:'KeyValuePair', repeated:true}, 9:{n:'local_feed_events', repeated:true},
+    10:{n:'plots', m:'Plot', repeated:true}, 11:{n:'map_width'}, 12:{n:'map_height'}, 13:{n:'tutorial_info'},
+    15:{n:'book_index'}, 16:{n:'num_linked_rewards_shown'}, 17:{n:'asset_version'},
+    19:{n:'clothing_items', m:'ClothingItem', repeated:true}, 21:{n:'uuid'}, 27:{n:'goals_state'},
+    28:{n:'cheat_state', m:'CheatState'}, 30:{n:'verified_age_over_thirteen', fmt:'bool'},
+  },
+  Player: {
+    1:{n:'xp'}, 2:{n:'coins'}, 3:{n:'hearts'}, 4:{n:'stars'}, 25:{n:'pencils'}, 27:{n:'tickets'},
+    5:{n:'completed_unique_date_ids', repeated:true}, 6:{n:'date_records', m:'DateRecord', repeated:true},
+    7:{n:'relationships', m:'CharacterRelationship', repeated:true},
+    9:{n:'facebook_id'}, 10:{n:'gamecenter_id'}, 11:{n:'gamecenter_handle'}, 12:{n:'gamecenter_name'},
+    13:{n:'platform'}, 14:{n:'locale'}, 15:{n:'name_in_game'}, 16:{n:'character_party_states', repeated:true},
+    18:{n:'facebook_name'}, 21:{n:'visit_friend_rewards', repeated:true},
+    22:{n:'plus_id'}, 23:{n:'linked_plus_id', fmt:'bool'}, 20:{n:'social_enabled', fmt:'bool'},
+  },
+  DateRecord: {
+    1:{n:'date_id'}, 2:{n:'character_ids', repeated:true}, 3:{n:'success', fmt:'bool'},
+    4:{n:'time'}, 5:{n:'breakup', fmt:'bool'},
+  },
+  CharacterRelationship: {
+    1:{n:'id_a'}, 2:{n:'id_b'}, 3:{n:'strength',fmt:'int32'},
+  },
+  Character: {
+    1:{n:'id'}, 2:{n:'name'}, 3:{n:'original_name'}, 4:{n:'skin'}, 5:{n:'face'}, 6:{n:'outfit'},
+    7:{n:'hair_style'}, 8:{n:'hair_color'}, 9:{n:'type', enum:CHARACTER_TYPE_ENUM}, 10:{n:'gender', enum:GENDER_ENUM},
+    11:{n:'skill_points'}, 20:{n:'custom_admit_time'}, 19:{n:'clothing_item_keys', repeated:true},
+  },
+  Building: {
+    1:{n:'type', enum:BUILDING_TYPE_ENUM}, 2:{n:'id'}, 3:{n:'upgrade_level'}, 4:{n:'constructed', fmt:'bool'},
+    5:{n:'action'}, 6:{n:'position'}, 7:{n:'flipped', fmt:'bool'}, 8:{n:'back_side', fmt:'bool'},
+  },
+  StoreState: {
+    1:{n:'seen_character_types', enum:CHARACTER_TYPE_ENUM, repeated:true},
+    2:{n:'seen_building_types', enum:BUILDING_TYPE_ENUM, repeated:true},
+  },
+  KeyValuePair: {1:{n:'key'}, 2:{n:'value'}},
+  ClothingItem: {1:{n:'key'}, 2:{n:'quantity'}},
+  Plot: {1:{n:'x'}, 2:{n:'y'}, 3:{n:'unlocked', fmt:'bool'}},
+  CheatState: {1:{n:'score'}, 3:{n:'last_client_time', fmt:'timestamp'}},
+};
+
+function fieldLabel(schemaName, fieldNum){
+  const s = SCHEMA[schemaName];
+  if(s && s[fieldNum]) return s[fieldNum].n;
+  return null;
+}
+function fieldMeta(schemaName, fieldNum){
+  const s = SCHEMA[schemaName];
+  if(schemaName==='Player'&&currentProfile){
+    const label=playerResourceLabel(fieldNum);
+    if(label) return {...s[fieldNum],n:label};
+  }
+  return (s && s[fieldNum]) || null;
+}
+function playerResourceLabel(fieldNum){
+  const hwu=currentProfile&&currentProfile.id==='hwu';
+  const labels={
+    1:'XP',
+    2:hwu?'Cash':'Coins',
+    3:hwu?'Diamonds':'Rings',
+    4:'Books',
+    25:'Pencils',
+    27:'Tickets',
+  };
+  return labels[fieldNum]||null;
+}
+
+function humanizeEnumSymbol(symbol){
+  const reserved = /(?:^|_)RESERVED_(\d+)$/.exec(symbol);
+  if(reserved) return 'Reserved value '+reserved[1];
+  return symbol.toLowerCase().split('_').map(word=>{
+    if(word==='hss' || word==='hwu') return word.toUpperCase();
+    if(word==='dj' || word==='tv') return word.toUpperCase();
+    return word ? word[0].toUpperCase()+word.slice(1) : word;
+  }).join(' ');
+}
+function createCodedValueSelect(entry, meta, label){
+  const options = meta.enum || {0:'FALSE',1:'TRUE'};
+  const visibleOptions=Object.fromEntries(Object.entries(options).filter(([,symbol])=>
+    !meta.friendly||!/(?:^|_)RESERVED_\d+$/.test(symbol)
+  ));
+  const select = document.createElement('select');
+  select.className = 'enum-select';
+  select.setAttribute('aria-label',label+' value');
+  Object.keys(visibleOptions).sort((a,b)=>Number(a)-Number(b)).forEach(raw=>{
+    const symbol = visibleOptions[raw];
+    const option = document.createElement('option');
+    option.value = raw;
+    option.textContent = meta.friendly
+      ? humanizeEnumSymbol(symbol)
+      : `${humanizeEnumSymbol(symbol)} — ${symbol} (raw: ${raw})`;
+    select.appendChild(option);
+  });
+  const rawValue = entry.value.toString();
+  if(!Object.prototype.hasOwnProperty.call(visibleOptions,rawValue)){
+    const unknown = document.createElement('option');
+    unknown.value = rawValue;
+    unknown.textContent = `Unknown/unmapped (raw: ${rawValue})`;
+    select.appendChild(unknown);
+  }
+  select.value = rawValue;
+  select.addEventListener('change',()=>{
+    recordUndoSnapshot();
+    entry.value = BigInt(select.value);
+    select.classList.add('changed');
+    syncLinkedInputs(entry);
+    markDirty();
+  });
+  return select;
+}
+
+function fmtTimestamp(bigintVal){
+  try{
+    const n = Number(bigintVal);
+    if(n <= 0) return "";
+    const d = new Date(n*1000);
+    if(isNaN(d.getTime())) return "";
+    return d.toISOString().replace('T',' ').replace(/\.\d+Z$/,'Z');
+  }catch(e){ return ""; }
+}
+
+/* ---------------------------------------------------------------------- *
+ * App state
+ * ---------------------------------------------------------------------- */
+let rootEntries = null;   // parsed ClientGameState entries
+let originalFilename = "LOCAL.hss.sav";
+let originalPlainBytes = null;
+let undoHistory = [];
+const MAX_UNDO_STEPS = 50;
+let dirty = false;
+let fullTreeRendered = false;
+
+const el = id => document.getElementById(id);
+
+function setStatus(msg, cls){
+  const s = el('status');
+  s.textContent = msg;
+  s.className = 'status' + (cls ? ' '+cls : '');
+}
+function updateEditorState(){
+  const invalidCount=document.querySelectorAll('.invalid-value').length;
+  dirty=!!(originalPlainBytes&&rootEntries&&!bytesEqual(serializeMessage(rootEntries),originalPlainBytes));
+  el('undoBtn').disabled=undoHistory.length===0;
+  el('revertBtn').disabled=!dirty;
+  el('downloadBtn').disabled=invalidCount>0;
+  if(invalidCount){
+    el('changeCount').textContent=`Fix ${invalidCount} invalid field${invalidCount===1?'':'s'} before downloading.`;
+  }else{
+    el('changeCount').textContent=dirty?"Unsaved edits pending \u2014 use Download to produce the new file.":"";
+  }
+}
+function setInputValidity(input,valid,message){
+  input.classList.toggle('invalid-value',!valid);
+  input.setAttribute('aria-invalid',String(!valid));
+  if(valid) input.removeAttribute('title');
+  else input.title=message;
+  updateEditorState();
+}
+function readIntegerInput(input){
+  const raw=input.value.trim();
+  const valid=/^-?\d+$/.test(raw);
+  setInputValidity(input,valid,'Enter a whole number using digits, with an optional leading minus sign.');
+  return valid?BigInt(raw):null;
+}
+function recordUndoSnapshot(){
+  if(!rootEntries) return;
+  const snapshot=serializeMessage(rootEntries);
+  if(undoHistory.length&&bytesEqual(undoHistory[undoHistory.length-1],snapshot)) return;
+  undoHistory.push(snapshot);
+  if(undoHistory.length>MAX_UNDO_STEPS) undoHistory.shift();
+  updateEditorState();
+}
+function beginUndoEdit(input){
+  if(input.dataset.undoRecorded==='true') return;
+  recordUndoSnapshot();
+  input.dataset.undoRecorded='true';
+}
+function finishUndoEdit(input){
+  input.dataset.undoRecorded='false';
+}
+function markDirty(){
+  updateEditorState();
+  if(rootEntries&&currentProfile) buildSaveSummary();
+}
+function undoLastEdit(){
+  const previous=undoHistory.pop();
+  if(!previous) return;
+  rootEntries=parseMessage(previous);
+  buildEditor({clearUndo:false});
+}
+function revertAllEdits(){
+  if(!dirty||!originalPlainBytes) return;
+  if(!window.confirm('Discard all edits and restore the save exactly as it was loaded?')) return;
+  rootEntries=parseMessage(originalPlainBytes);
+  undoHistory=[];
+  buildEditor({clearUndo:false});
+}
+
+function updateFriendlySectionIcons(gameId){
+  document.querySelectorAll('[data-category-icon]').forEach(icon=>{
+    const category=icon.dataset.categoryIcon;
+    icon.src=`assets/${gameId}/ui/icons/category_${category}.png`;
+  });
+}
+function updateEditorControlIcons(gameId){
+  document.querySelectorAll('[data-toolbar-icon]').forEach(icon=>{
+    icon.src=`assets/${gameId}/ui/icons/${icon.dataset.toolbarIcon}.png`;
+  });
+}
+function updateFullDataIndicator(){
+  const gameId=document.documentElement.dataset.game==='hwu'?'hwu':'hss';
+  const expanded=el('fullDataToggle').getAttribute('aria-expanded')==='true';
+  el('fullDataIndicator').src=`assets/${gameId}/ui/icons/${expanded?'button_hide.png':'button_HUD_plus.png'}`;
+}
+function applyGameTheme(profile){
+  currentProfile=profile;
+  document.documentElement.dataset.game=profile.id;
+  updateFriendlySectionIcons(profile.id);
+  updateEditorControlIcons(profile.id);
+  updateFullDataIndicator();
+  document.title=profile.label+' Save Editor';
+  el('gameTitle').textContent=profile.label+' Save Editor';
+  el('gameTag').textContent=`${profile.label} ${profile.version} save. Decryption, editing, and re-encryption happen locally in your browser.`;
+  el('summaryHint').textContent='Identity and token values are intentionally masked here. Counts reflect fields recognized by the shared HSS/HWU save schema.';
+}
+function resetGameTheme(){
+  currentProfile=null;
+  document.documentElement.dataset.game='hss';
+  updateFriendlySectionIcons('hss');
+  updateEditorControlIcons('hss');
+  updateFullDataIndicator();
+  document.title='HSS / HWU Save Editor';
+  el('gameTitle').textContent='HSS / HWU Save Editor';
+  el('gameTag').textContent='Select an HSS or HWU .sav file. The game and matching visual theme are detected locally in your browser.';
+}
+async function handleFile(file){
+  try{
+    setStatus("Reading "+file.name+" ...");
+    const buf = new Uint8Array(await file.arrayBuffer());
+    setStatus("Checking HSS and HWU save profiles...");
+    const detected=await identifySave(buf);
+    currentProfile=detected.profile;
+    uidCounter=1;
+    rootEntries=parseMessage(detected.plainBytes);
+    originalPlainBytes=detected.plainBytes.slice();
+    undoHistory=[];
+    applyGameTheme(currentProfile);
+    originalFilename=file.name||currentProfile.defaultFilename;
+    el('outName').value = originalFilename;
+    setStatus("Detected "+currentProfile.label+" "+currentProfile.version+". Loaded "+file.name+" ("+buf.length+" bytes encrypted, "+detected.plainBytes.length+" bytes decrypted). Decrypt/parse OK.", 'ok');
+    buildEditor();
+  }catch(e){
+    console.error(e);
+    setStatus("Could not open this file:\n"+e.message, 'err');
+  }
+}
+
+function findChild(entries, fieldNum){
+  return entries.find(e=>e.field===fieldNum);
+}
+function findAllChildren(entries, fieldNum){
+  return entries.filter(e=>e.field===fieldNum);
+}
+
+function countMessages(entries, fieldNum){
+  return entries.filter(e=>e.field===fieldNum && e.mode==='msg').length;
+}
+function maskedValue(label,path,value){
+  const sensitivePath = /(?:token|secret|signing.?key|gamecenter|facebook|plus.?id|uuid|email|account.?id|session.?id)/i.test(label+' '+path);
+  const sensitiveShape = typeof value==='string' && (
+    /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i.test(value)
+    || /^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(value)
+    || (value.length >= 32 && /^[A-Za-z0-9_+/=-]+$/.test(value))
+  );
+  return sensitivePath || sensitiveShape;
+}
+function fieldDisplayValue(entry, meta){
+  if(entry.mode==='varint'){
+    const raw=(meta&&meta.fmt==='int32'?BigInt.asIntN(32,entry.value):entry.value).toString();
+    if(meta && meta.enum && Object.prototype.hasOwnProperty.call(meta.enum,raw)){
+      const symbol=meta.enum[raw];
+      return `${humanizeEnumSymbol(symbol)} (${symbol}, raw: ${raw})`;
+    }
+    if(meta && meta.fmt==='bool' && (raw==='0'||raw==='1')) return `${raw==='1'?'True':'False'} (raw: ${raw})`;
+    if(meta && meta.fmt==='timestamp') return `${fmtTimestamp(entry.value)} (raw: ${raw})`;
+    return raw;
+  }
+  if(entry.mode==='string') return entry.str;
+  if(entry.mode==='bytes'||entry.mode==='fixed') return bytesToHex(entry.bytes);
+  return '';
+}
+function buildSearchIndex(entries,schemaName,pathPrefix='ClientGameState'){
+  const results=[];
+  const grouped=new Map();
+  entries.forEach(entry=>{
+    if(!grouped.has(entry.field)) grouped.set(entry.field,[]);
+    grouped.get(entry.field).push(entry);
+  });
+  for(const [fieldNum,group] of grouped){
+    const meta=fieldMeta(schemaName,fieldNum);
+    const label=meta?meta.n:`field ${fieldNum}`;
+    group.forEach((entry,index)=>{
+      const fieldPath=`${pathPrefix}.${label}${group.length>1||meta&&meta.repeated?`[${index}]`:''}`;
+      if(entry.mode==='msg'){
+        const childSchema=meta&&meta.m?meta.m:`${label}?`;
+        results.push(...buildSearchIndex(entry.children,childSchema,fieldPath));
+      }else{
+        const value=fieldDisplayValue(entry,meta);
+        results.push({label,path:fieldPath,value,masked:maskedValue(label,fieldPath,value)});
+      }
+    });
+  }
+  return results;
+}
+function buildSaveSummary(){
+  const grid=el('summaryGrid');
+  grid.replaceChildren();
+  const stateEntry=findChild(rootEntries,2);
+  const gameState=stateEntry&&stateEntry.mode==='msg'?stateEntry.children:[];
+  const playerEntry=findChild(gameState,3);
+  const player=playerEntry&&playerEntry.mode==='msg'?playerEntry.children:[];
+  const serverInfoEntry=findChild(rootEntries,8);
+  const serverInfo=serverInfoEntry&&serverInfoEntry.mode==='msg'?serverInfoEntry.children:[];
+  const gamecenter=findChild(player,10);
+  const identity=gamecenter&&gamecenter.mode==='string'
+    ? (gamecenter.str?'Account-linked (identifier masked)':'Guest/local')
+    : 'Unknown (identifier field absent)';
+  const savedTime=findChild(rootEntries,9);
+  const summary=[
+    ['Save profile',currentProfile.shortLabel+' '+currentProfile.version],
+    ['Saved time',savedTime&&savedTime.mode==='varint'?fmtTimestamp(savedTime.value)||'Unrecognized timestamp':'Not present'],
+    ['Identity',identity],
+    ['XP',formatScalarField(player,1),1],
+    [playerResourceLabel(2),formatScalarField(player,2),2],
+    [playerResourceLabel(3),formatScalarField(player,3),3],
+    [playerResourceLabel(4),formatScalarField(player,4),4],
+    [playerResourceLabel(25),formatScalarField(player,25),25],
+    [playerResourceLabel(27),formatScalarField(player,27),27],
+    ['Server tokens',serverInfo.some(e=>[1,2,3].includes(e.field))?'Present (values masked)':'Not detected'],
+    ['Characters',countMessages(gameState,4)],
+    ['Buildings',countMessages(gameState,6)],
+    ['Quest-state entries',findAllChildren(gameState,5).length],
+    ['Clothing entries',countMessages(gameState,19)],
+    ['Property entries',countMessages(gameState,8)],
+    ['Top-level version',formatScalarField(rootEntries,1)],
+    ['Asset version',formatScalarField(rootEntries,19)],
+    ['Config version',formatScalarField(gameState,1)],
+  ];
+  for(const [label,value,iconKey] of summary){
+    const item=document.createElement('div');
+    item.className='summary-item';
+    const valueEl=document.createElement('div');
+    valueEl.className='value';
+    valueEl.textContent=String(value);
+    const labelEl=document.createElement('div');
+    labelEl.className='label';
+    appendHudLabel(labelEl,label,iconKey);
+    item.append(valueEl,labelEl);
+    grid.appendChild(item);
+  }
+}
+function hudIconForField(fieldNum){
+  const icons=currentProfile&&currentProfile.id==='hwu'
+    ? {2:'icon_HUD_coin.png',3:'icon_HUD_ring.png',27:'icon_HUD_ticket.png'}
+    : {2:'icon_HUD_coin.png',3:'icon_HUD_ring.png',4:'icon_HUD_book.png',25:'icon_HUD_pencil.png',27:'icon_HUD_ticket.png'};
+  const filename=icons[fieldNum];
+  return filename?`assets/${currentProfile.id}/ui/icons/${filename}`:null;
+}
+function appendHudLabel(container,label,fieldNum){
+  const iconPath=fieldNum&&hudIconForField(fieldNum);
+  if(iconPath){
+    const icon=document.createElement('img');
+    icon.className='currency-icon';
+    icon.src=iconPath;
+    icon.alt='';
+    icon.setAttribute('aria-hidden','true');
+    container.appendChild(icon);
+  }
+  const text=document.createElement('span');
+  text.textContent=label;
+  container.appendChild(text);
+}
+function formatScalarField(entries,fieldNum){
+  const entry=findChild(entries,fieldNum);
+  return entry&&entry.mode==='varint'?entry.value.toString():'Not present';
+}
+function updateSearchResults(){
+  const q=el('searchBox').value.trim().toLowerCase();
+  const resultsEl=el('searchResults');
+  resultsEl.replaceChildren();
+  const rows=el('tree').querySelectorAll('.row, details.node');
+  if(!q){
+    rows.forEach(row=>row.style.display='');
+    return;
+  }
+  const index=buildSearchIndex(rootEntries,'ClientGameState');
+  const matches=index.filter(item=>
+    item.label.toLowerCase().includes(q)
+    || item.path.toLowerCase().includes(q)
+    || item.value.toLowerCase().includes(q)
+  );
+  const shown=matches.slice(0,50);
+  const count=document.createElement('div');
+  count.textContent=`${matches.length} match${matches.length===1?'':'es'}${matches.length>shown.length?' (first 50 shown)':''}`;
+  resultsEl.appendChild(count);
+  shown.forEach(item=>{
+    const result=document.createElement('button');
+    result.type='button';
+    result.className='search-result';
+    const path=document.createElement('span');
+    path.className='result-path';
+    path.textContent=item.path;
+    const value=document.createElement('span');
+    value.className='result-value';
+    value.textContent=item.masked?'Sensitive value masked':item.value;
+    result.append(path,value);
+    result.addEventListener('click',()=>{
+      el('searchBox').value=item.label;
+      el('searchBox').dispatchEvent(new Event('input',{bubbles:true}));
+      if(!fullTreeRendered) renderFullSaveTree();
+      setFullDataExpanded(true);
+      const target=Array.from(el('tree').querySelectorAll('[data-path]')).find(node=>node.dataset.path===item.path.toLowerCase());
+      if(target){
+        let parent=target.parentElement;
+        while(parent&&parent!==el('tree')){
+          if(parent.tagName==='DETAILS') parent.open=true;
+          parent=parent.parentElement;
+        }
+        target.scrollIntoView({block:'center'});
+        const control=target.matches('input,textarea,select')?target:target.querySelector('input,textarea,select');
+        if(control) control.focus({preventScroll:true});
+      }
+    });
+    resultsEl.appendChild(result);
+  });
+  if(matches.length===0){
+    const empty=document.createElement('div');
+    empty.className='hint';
+    empty.textContent='No matching fields.';
+    resultsEl.appendChild(empty);
+  }
+  const treeRows=Array.from(el('tree').querySelectorAll('.row'));
+  treeRows.forEach(row=>{
+    const label=row.dataset.label||'';
+    const path=row.dataset.path||'';
+    const inputs=Array.from(row.querySelectorAll('input,textarea,select'));
+    const selectedText=inputs.filter(input=>input.tagName==='SELECT'&&input.selectedIndex>=0).map(input=>input.options[input.selectedIndex].text).join(' ');
+    const rawValue=inputs.map(input=>input.value).join(' ');
+    row.style.display=(label.includes(q)||path.toLowerCase().includes(q)||(rawValue+' '+selectedText).toLowerCase().includes(q))?'':'none';
+  });
+  el('tree').querySelectorAll('details.node').forEach(detail=>{
+    const anyVisibleDescendant=Array.from(detail.querySelectorAll('.row')).some(row=>row.style.display!=='none');
+    const selfMatch=(detail.dataset.label||'').includes(q)||(detail.dataset.path||'').toLowerCase().includes(q);
+    detail.style.display=(anyVisibleDescendant||selfMatch)?'':'none';
+    if(anyVisibleDescendant) detail.open=true;
+  });
+}
+
+function buildEditor({clearUndo=true}={}){
+  el('dropcard').classList.add('hidden');
+  el('editorArea').classList.remove('hidden');
+  if(clearUndo) undoHistory=[];
+  buildQuickFields();
+  buildFriendlyEditors();
+  if(clearUndo){
+    fullTreeRendered=false;
+    el('tree').replaceChildren();
+    setFullDataExpanded(false);
+  }else if(fullTreeRendered){
+    fullTreeRendered=false;
+    renderFullSaveTree();
+  }
+  buildSaveSummary();
+  updateSearchResults();
+  updateEditorState();
+}
+
+function renderFullSaveTree(){
+  if(fullTreeRendered) return;
+  el('tree').replaceChildren();
+  renderNode(el('tree'), rootEntries, 'ClientGameState', 0);
+  fullTreeRendered=true;
+  updateSearchResults();
+}
+function setFullDataExpanded(expanded){
+  el('fullDataToggle').setAttribute('aria-expanded',String(expanded));
+  el('fullDataPanel').hidden=!expanded;
+  el('fullDataPanel').classList.toggle('hidden',!expanded);
+  updateFullDataIndicator();
+}
+el('fullDataToggle').addEventListener('click',()=>{
+  const expanded=el('fullDataToggle').getAttribute('aria-expanded')==='true';
+  if(!expanded) renderFullSaveTree();
+  setFullDataExpanded(!expanded);
+});
+
+/* ---- Quick fields: currencies + identity, wired directly to the tree ---- */
+function buildQuickFields(){
+  const grid = el('quickGrid');
+  grid.innerHTML = '';
+  const gs = findChild(rootEntries, 2);
+  const player = gs && gs.mode==='msg' ? findChild(gs.children, 3) : null;
+  const saved = findChild(rootEntries, 9);
+
+  const fields = [];
+  if(player && player.mode==='msg'){
+    const p = player.children;
+    const map = [[1,'XP'],[2,playerResourceLabel(2)],[3,playerResourceLabel(3)],[4,playerResourceLabel(4)],[25,playerResourceLabel(25)],[27,playerResourceLabel(27)]];
+    for(const [fieldNum,label] of map){
+      const entry = findChild(p, fieldNum);
+      if(entry && entry.mode==='varint') fields.push({label, fieldNum, entry});
+    }
+  }
+  if(saved && saved.mode==='varint') fields.push({label:'saved_time (unix)', entry:saved, isTimestamp:true});
+
+  for(const f of fields){
+    const wrap = document.createElement('div');
+    wrap.className = 'qfield';
+    const lab = document.createElement('label');
+    const input = document.createElement('input');
+    input.id=f.fieldNum?`quick-field-${f.fieldNum}`:'quick-saved-time';
+    input.type = 'text';
+    input.value = f.entry.value.toString();
+    lab.htmlFor=input.id;
+    appendHudLabel(lab,f.label,f.fieldNum);
+    input.addEventListener('input', ()=>{
+      const value=readIntegerInput(input);
+      if(value===null) return;
+      beginUndoEdit(input);
+      f.entry.value=value;
+      input.classList.add('changed');
+      syncLinkedInputs(f.entry);
+      markDirty();
+    });
+    input.addEventListener('change',()=>finishUndoEdit(input));
+    f.entry._quickInput = input;
+    wrap.appendChild(lab); wrap.appendChild(input);
+    grid.appendChild(wrap);
+  }
+
+  const identHint = el('identityHint');
+  let gcId = null;
+  if(player && player.mode==='msg'){
+    const g = findChild(player.children, 10);
+    if(g && g.mode==='string') gcId = g.str;
+  }
+  if(gcId){
+    identHint.textContent = "Identity: account-linked save (gamecenter_id value masked). The game treats this as an account save, not the local/guest save. Clear the field in the tree only if you intend to change identity.";
+  }else{
+    identHint.textContent = "Identity: gamecenter_id is empty \u2014 the game will treat this as the LOCAL / guest save.";
+  }
+}
+
+function friendlyValue(entries, fieldNum){
+  return findChild(entries,fieldNum)||null;
+}
+function friendlyField(container,label,entry,{enumOptions=null,integer=false,onUpdate=null}={}){
+  const wrap=document.createElement('div');
+  wrap.className='qfield';
+  if(!entry){
+    const labelEl=document.createElement('span');
+    labelEl.className='friendly-label';
+    labelEl.textContent=label;
+    const unavailable=document.createElement('span');
+    unavailable.className='friendly-unavailable';
+    unavailable.textContent='Not present in this save';
+    wrap.append(labelEl,unavailable);
+    container.appendChild(wrap);
+    return;
+  }
+  const id=`friendly-${entry.uid}`;
+  const labelEl=document.createElement('label');
+  labelEl.htmlFor=id;
+  labelEl.textContent=label;
+  let control;
+  if(enumOptions){
+    control=createCodedValueSelect(entry,{enum:enumOptions,friendly:true},label);
+    control.id=id;
+    control.addEventListener('change',()=>{if(onUpdate) onUpdate();});
+  }else{
+    control=document.createElement('input');
+    control.type='text';
+    control.id=id;
+    control.value=entry.mode==='string'?entry.str:entry.value.toString();
+    control.setAttribute('aria-label',label);
+    control.addEventListener('input',()=>{
+      if(integer){
+        const value=readIntegerInput(control);
+        if(value===null) return;
+        beginUndoEdit(control);
+        entry.value=value;
+      }else{
+        beginUndoEdit(control);
+        entry.str=control.value;
+      }
+      control.classList.add('changed');
+      syncLinkedInputs(entry);
+      markDirty();
+      if(onUpdate) onUpdate();
+    });
+    control.addEventListener('change',()=>finishUndoEdit(control));
+  }
+  entry._friendlyInput=control;
+  wrap.append(labelEl,control);
+  container.appendChild(wrap);
+}
+function setFriendlyCardImage(image,{src,alt,fallbackSrc,fallbackAlt,placeholderOnFallback=false,fallbackTitle=''}){
+  image.onerror=null;
+  image.classList.toggle('is-placeholder',placeholderOnFallback&&!src);
+  image.alt=src?alt:fallbackAlt;
+  image.title=src?'':fallbackTitle;
+  if(src){
+    image.onerror=()=>{
+      image.onerror=null;
+      image.classList.toggle('is-placeholder',placeholderOnFallback);
+      image.src=fallbackSrc;
+      image.alt=fallbackAlt;
+      image.title=fallbackTitle;
+    };
+    image.src=src;
+  }else{
+    image.src=fallbackSrc;
+  }
+}
+function friendlyCard(grid,title,description='',{portraitName=null,buildingAssetName=null,decorationAssetName=null,iconName='classmates',showIcon=true}={}){
+  const card=document.createElement('article');
+  card.className='friendly-card';
+  const headingRow=document.createElement('div');
+  if(showIcon){
+    headingRow.classList.add('has-portrait');
+    const portrait=document.createElement('img');
+    portrait.className='friendly-card-portrait';
+    const gameAssetPath=`assets/${currentProfile.id}/ui/`;
+    const fallbackIcon=`${gameAssetPath}icons/category_${iconName}.png`;
+    const isBuilding=iconName==='buildings';
+    const isDecoration=iconName==='decorations';
+    const specificAssetName=buildingAssetName||decorationAssetName;
+    if(specificAssetName) portrait.classList.add('is-specific-art');
+    const imageSrc=portraitName
+      ? `${gameAssetPath}portraits/${portraitName}-thumb.png`
+      : specificAssetName
+        ? `${gameAssetPath}${isDecoration?'decorations':'buildings'}/${specificAssetName}.png`
+        : null;
+    setFriendlyCardImage(portrait,{
+      src:imageSrc,
+      alt:portraitName?`Portrait of ${portraitName}`:`${title} ${isDecoration?'decoration':'building'} artwork`,
+      fallbackSrc:fallbackIcon,
+      fallbackAlt:isBuilding?'Campus building icon; specific artwork unavailable':isDecoration?'Decoration icon; specific artwork unavailable':'Generic classmate icon; individual portrait unavailable',
+      placeholderOnFallback:!isBuilding&&!isDecoration,
+      fallbackTitle:isBuilding||isDecoration?'Specific artwork unavailable':'Individual portrait unavailable for this classmate',
+    });
+    portrait.loading='lazy';
+    portrait.decoding='async';
+    headingRow.appendChild(portrait);
+  }
+  const headingCopy=document.createElement('div');
+  headingCopy.className='friendly-card-heading-copy';
+  const heading=document.createElement('h3');
+  heading.textContent=title;
+  headingCopy.appendChild(heading);
+  if(description){
+    const hint=document.createElement('div');
+    hint.className='hint';
+    hint.textContent=description;
+    headingCopy.appendChild(hint);
+  }
+  headingRow.appendChild(headingCopy);
+  card.appendChild(headingRow);
+  grid.appendChild(card);
+  return card;
+}
+function friendlyEmpty(grid,message){
+  const empty=document.createElement('div');
+  empty.className='friendly-empty';
+  empty.textContent=message;
+  grid.appendChild(empty);
+}
+function readRelationshipStrength(entry){
+  if(!entry||entry.wire!==0||entry.mode!=='varint') return null;
+  const value=Number(BigInt.asIntN(32,entry.value));
+  return Number.isSafeInteger(value)?value:null;
+}
+function writeRelationshipStrength(entry,value){
+  entry.wire=0;
+  entry.mode='varint';
+  entry.value=BigInt.asIntN(32,BigInt(value));
+}
+function getRelationshipLevelIndex(strength,levels){
+  if(!Number.isSafeInteger(strength)||strength<0||!levels?.length) return null;
+  let levelIndex=0;
+  for(let index=1;index<levels.length;index++){
+    if(strength<levels[index].strength) break;
+    levelIndex=index;
+  }
+  return levelIndex;
+}
+function getClassmateLevelProgress(skillPoints,gameId){
+  const config=CLASSMATE_LEVEL_CONFIG_BY_GAME[gameId];
+  if(!config||!Number.isSafeInteger(skillPoints)||skillPoints<0) return null;
+  let levelIndex=0;
+  for(let index=1;index<config.skillRequired.length;index++){
+    if(skillPoints<config.skillRequired[index]) break;
+    levelIndex=index;
+  }
+  const maxLevel=levelIndex===config.skillRequired.length-1;
+  const nextLevelCost=maxLevel?0:config.skillRequired[levelIndex+1]-config.skillRequired[levelIndex];
+  return {
+    level:levelIndex+1,
+    progress:maxLevel?0:Math.min(nextLevelCost,skillPoints-config.skillRequired[levelIndex]),
+    nextLevelCost,
+    maxLevel,
+  };
+}
+function setClassmateSkillPoints(character,entry,value){
+  if(!Number.isSafeInteger(value)||value<0) return null;
+  let skillPoints=entry;
+  if(!skillPoints){
+    skillPoints={uid:nextUid(),field:11,wire:0,mode:'varint',value:0n};
+    character.children.push(skillPoints);
+  }
+  skillPoints.wire=0;
+  skillPoints.mode='varint';
+  skillPoints.value=BigInt(value);
+  return skillPoints;
+}
+function makeRelationshipEntry(idA,idB,level){
+  const makeId=(field,value)=>({uid:nextUid(),field,wire:0,mode:'varint',value:BigInt(value)});
+  const strength={uid:nextUid(),field:3,wire:0,mode:'varint',value:0n};
+  writeRelationshipStrength(strength,level);
+  return {
+    uid:nextUid(),field:7,wire:2,mode:'msg',
+    children:[makeId(1,idA),makeId(2,idB),strength],
+  };
+}
+function relationshipPairKey(idA,idB){
+  return [idA,idB].sort((a,b)=>a.localeCompare(b)).join(':');
+}
+function relationshipCharacterName(character,characterId){
+  const name=friendlyValue(character.children,2);
+  const originalName=friendlyValue(character.children,3);
+  return name&&name.mode==='string'&&name.str.trim()
+    ? name.str.trim()
+    : originalName&&originalName.mode==='string'&&originalName.str.trim()
+      ? originalName.str.trim()
+      : `Character ${characterId}`;
+}
+function buildRelationshipEditor(){
+  const gameState=findChild(rootEntries,2);
+  const gameFields=gameState&&gameState.mode==='msg'?gameState.children:[];
+  const player=findChild(gameFields,3);
+  const playerFields=player&&player.mode==='msg'?player.children:[];
+  const characters=findAllChildren(gameFields,4).filter(entry=>entry.mode==='msg');
+  const characterById=new Map();
+  const characterOptions=[];
+  characters.forEach(character=>{
+    const id=friendlyValue(character.children,1);
+    if(!id||id.mode!=='varint') return;
+    const characterId=id.value.toString();
+    const name=relationshipCharacterName(character,characterId);
+    characterById.set(characterId,{entry:character,name});
+    characterOptions.push({id:characterId,name});
+  });
+  const relationships=findAllChildren(playerFields,7).filter(entry=>entry.mode==='msg');
+  const addForm=el('relationshipAddForm');
+  const grid=el('relationshipGrid');
+  addForm.replaceChildren();
+  grid.replaceChildren();
+
+  if(!player||player.mode!=='msg'){
+    friendlyEmpty(addForm,'Player relationship data is not present in this save.');
+    friendlyEmpty(grid,'No relationship data is available.');
+    return;
+  }
+
+  if(characterOptions.length<2){
+    friendlyEmpty(addForm,'At least two characters with IDs are needed to create a relationship.');
+  }else{
+    const firstField=document.createElement('div');
+    firstField.className='qfield';
+    const firstLabel=document.createElement('label');
+    firstLabel.textContent='First character';
+    const firstSelect=document.createElement('select');
+    firstSelect.className='enum-select';
+    firstSelect.setAttribute('aria-label','First character in new relationship');
+    firstLabel.htmlFor='relationshipFirstCharacter';
+    firstSelect.id='relationshipFirstCharacter';
+    const secondField=document.createElement('div');
+    secondField.className='qfield';
+    const secondLabel=document.createElement('label');
+    secondLabel.textContent='Second character';
+    const secondSelect=document.createElement('select');
+    secondSelect.className='enum-select';
+    secondSelect.setAttribute('aria-label','Second character in new relationship');
+    secondLabel.htmlFor='relationshipSecondCharacter';
+    secondSelect.id='relationshipSecondCharacter';
+    const addButton=document.createElement('button');
+    addButton.type='button';
+    addButton.textContent='Start dating';
+    addButton.disabled=true;
+    const existingPairs=new Set(relationships.map(entry=>{
+      const idA=friendlyValue(entry.children,1);
+      const idB=friendlyValue(entry.children,2);
+      return idA&&idA.mode==='varint'&&idB&&idB.mode==='varint'
+        ? relationshipPairKey(idA.value.toString(),idB.value.toString())
+        : null;
+    }).filter(Boolean));
+    const fillFirst=()=>{
+      firstSelect.replaceChildren(new Option('Choose a character',''));
+      characterOptions.forEach(character=>firstSelect.add(new Option(`${character.name} (#${character.id})`,character.id)));
+    };
+    const fillSecond=()=>{
+      const selectedFirst=firstSelect.value;
+      secondSelect.replaceChildren(new Option('Choose a character',''));
+      characterOptions.filter(character=>character.id!==selectedFirst).forEach(character=>
+        secondSelect.add(new Option(`${character.name} (#${character.id})`,character.id))
+      );
+      secondSelect.value='';
+    };
+    const updateAddButton=()=>{
+      const pairKey=firstSelect.value&&secondSelect.value
+        ? relationshipPairKey(firstSelect.value,secondSelect.value)
+        : null;
+      addButton.disabled=!pairKey||existingPairs.has(pairKey);
+      addButton.title=pairKey&&existingPairs.has(pairKey)?'This relationship already exists.':'';
+    };
+    fillFirst();
+    fillSecond();
+    firstSelect.addEventListener('change',()=>{fillSecond();updateAddButton();});
+    secondSelect.addEventListener('change',updateAddButton);
+    addButton.addEventListener('click',()=>{
+      const idA=firstSelect.value;
+      const idB=secondSelect.value;
+      const pairKey=relationshipPairKey(idA,idB);
+      if(!idA||!idB||idA===idB||existingPairs.has(pairKey)) return;
+      recordUndoSnapshot();
+      player.children.push(makeRelationshipEntry(idA,idB,0));
+      markDirty();
+      buildFriendlyEditors();
+    });
+    firstField.append(firstLabel,firstSelect);
+    secondField.append(secondLabel,secondSelect);
+    addForm.append(firstField,secondField,addButton);
+  }
+
+  if(!relationships.length){
+    friendlyEmpty(grid,'No relationships are currently saved. Choose two characters above to start dating.');
+    return;
+  }
+  const levelConfig=RELATIONSHIP_LEVEL_CONFIG_BY_GAME[currentProfile.id]
+    ||RELATIONSHIP_LEVEL_CONFIG_BY_GAME.hss;
+  relationships.forEach((relationship,index)=>{
+    const idA=friendlyValue(relationship.children,1);
+    const idB=friendlyValue(relationship.children,2);
+    const idAValue=idA&&idA.mode==='varint'?idA.value.toString():null;
+    const idBValue=idB&&idB.mode==='varint'?idB.value.toString():null;
+    const nameA=idAValue?(characterById.get(idAValue)?.name||`Character ${idAValue}`):'Unknown character';
+    const nameB=idBValue?(characterById.get(idBValue)?.name||`Character ${idBValue}`):'Unknown character';
+    const card=friendlyCard(grid,`${nameA} & ${nameB}`,'Dating relationship');
+    card.dataset.search=`${nameA} ${nameB} ${idAValue||''} ${idBValue||''}`.toLowerCase();
+    const strength=friendlyValue(relationship.children,3);
+    const strengthValue=readRelationshipStrength(strength);
+    const currentLevel=getRelationshipLevelIndex(strengthValue,levelConfig);
+    const isMaxLevel=currentLevel===levelConfig.length-1;
+    const currentProgress=currentLevel===null
+      ? null
+      : isMaxLevel
+        ? 0
+        : strengthValue-levelConfig[currentLevel].strength;
+    const levelField=document.createElement('div');
+    levelField.className='qfield';
+    const levelLabel=document.createElement('label');
+    levelLabel.textContent='Relationship level';
+    const levelSelect=document.createElement('select');
+    levelSelect.className='enum-select';
+    levelSelect.setAttribute('aria-label',`Relationship level for ${nameA} and ${nameB}`);
+    if(currentLevel===null){
+      const currentOption=new Option(
+        strengthValue===null
+          ? (strength?'Unmapped strength':'Strength not stored')
+          : `Current strength (${strengthValue})`,
+        'preserve',
+      );
+      currentOption.selected=true;
+      levelSelect.add(currentOption);
+    }
+    levelConfig.forEach((level, index)=>
+      levelSelect.add(new Option(`${level.name} (level ${index+1})`,String(index)))
+    );
+    if(currentLevel!==null) levelSelect.value=String(currentLevel);
+    const progressField=document.createElement('div');
+    progressField.className='qfield';
+    const progressLabel=document.createElement('label');
+    progressLabel.textContent='Progress increments';
+    progressLabel.htmlFor=`relationshipProgress${index}`;
+    const progressSelect=document.createElement('select');
+    progressSelect.className='enum-select';
+    progressSelect.id=`relationshipProgress${index}`;
+    progressSelect.setAttribute('aria-label',`Progress increments for ${nameA} and ${nameB}`);
+    const fillProgressOptions=(levelIndex,preferredProgress=0)=>{
+      progressSelect.replaceChildren();
+      const maxLevel=levelIndex===levelConfig.length-1;
+      if(maxLevel){
+        progressSelect.add(new Option('Maximum level','0'));
+        progressSelect.disabled=true;
+        progressSelect.value='0';
+        return;
+      }
+      const levelSpan=levelConfig[levelIndex+1].strength-levelConfig[levelIndex].strength;
+      for(let step=0;step<levelSpan;step++){
+        progressSelect.add(new Option(`${step} / ${levelSpan} to next level`,String(step)));
+      }
+      progressSelect.disabled=false;
+      progressSelect.value=String(Math.max(0,Math.min(levelSpan-1,preferredProgress)));
+    };
+    if(currentProgress===null){
+      progressSelect.disabled=true;
+    }else{
+      fillProgressOptions(currentLevel,currentProgress);
+    }
+    const updateStrength=(nextLevel,nextProgress)=>{
+      if(!Number.isInteger(nextLevel)||nextLevel<0||nextLevel>=levelConfig.length
+        ||!Number.isInteger(nextProgress)||nextProgress<0) return;
+      const nextIsMaxLevel=nextLevel===levelConfig.length-1;
+      const nextLevelSpan=nextIsMaxLevel
+        ? 0
+        : levelConfig[nextLevel+1].strength-levelConfig[nextLevel].strength;
+      if(nextIsMaxLevel?nextProgress!==0:nextProgress>=nextLevelSpan) return;
+      recordUndoSnapshot();
+      let strengthField=strength;
+      if(!strengthField){
+        strengthField={uid:nextUid(),field:3,wire:0,mode:'varint',value:0n};
+        relationship.children.push(strengthField);
+      }
+      writeRelationshipStrength(strengthField,levelConfig[nextLevel].strength+nextProgress);
+      levelSelect.classList.add('changed');
+      progressSelect.classList.add('changed');
+      markDirty();
+    };
+    levelSelect.addEventListener('change',()=>{
+      if(levelSelect.value==='preserve') return;
+      const nextLevel=Number(levelSelect.value);
+      const existingProgress=Number(progressSelect.value);
+      fillProgressOptions(nextLevel,Number.isInteger(existingProgress)?existingProgress:0);
+      updateStrength(nextLevel,Number(progressSelect.value));
+    });
+    progressSelect.addEventListener('change',()=>{
+      if(levelSelect.value==='preserve') return;
+      updateStrength(Number(levelSelect.value),Number(progressSelect.value));
+    });
+    levelLabel.htmlFor=`relationshipLevel${index}`;
+    levelSelect.id=`relationshipLevel${index}`;
+    levelField.append(levelLabel,levelSelect);
+    card.appendChild(levelField);
+    progressField.append(progressLabel,progressSelect);
+    card.appendChild(progressField);
+    const actionRow=document.createElement('div');
+    actionRow.className='relationship-actions';
+    const stopButton=document.createElement('button');
+    stopButton.type='button';
+    stopButton.textContent='End dating';
+    stopButton.addEventListener('click',()=>{
+      recordUndoSnapshot();
+      player.children.splice(player.children.indexOf(relationship),1);
+      markDirty();
+      buildFriendlyEditors();
+    });
+    actionRow.appendChild(stopButton);
+    card.appendChild(actionRow);
+  });
+  el('relationshipFilter').value='';
+  el('relationshipFilter').oninput=filterRelationships;
+}
+function filterRelationships(){
+  const query=el('relationshipFilter').value.trim().toLowerCase();
+  const cards=Array.from(el('relationshipGrid').querySelectorAll('.friendly-card'));
+  let visible=0;
+  cards.forEach(card=>{
+    const matches=!query||(card.dataset.search||'').includes(query);
+    card.classList.toggle('hidden',!matches);
+    if(matches) visible++;
+  });
+  let noMatches=el('relationshipGrid').querySelector('.no-relationship-matches');
+  if(query&&visible===0&&cards.length>0){
+    if(!noMatches){
+      noMatches=document.createElement('div');
+      noMatches.className='friendly-empty no-relationship-matches';
+      noMatches.textContent='No relationships match that search.';
+      el('relationshipGrid').appendChild(noMatches);
+    }
+  }else if(noMatches){
+    noMatches.remove();
+  }
+}
+function buildFriendlyEditors(){
+  const gameStateEntry=findChild(rootEntries,2);
+  const gameState=gameStateEntry&&gameStateEntry.mode==='msg'?gameStateEntry.children:[];
+  const classmates=findAllChildren(gameState,4).filter(entry=>entry.mode==='msg');
+  const buildings=findAllChildren(gameState,6).filter(entry=>entry.mode==='msg');
+  const plots=findAllChildren(gameState,10).filter(entry=>entry.mode==='msg');
+  const classmateGrid=el('classmateGrid');
+  const buildingGrid=el('buildingGrid');
+  const plotGrid=el('plotGrid');
+  classmateGrid.replaceChildren();
+  buildingGrid.replaceChildren();
+  plotGrid.replaceChildren();
+
+  if(!classmates.length){
+    friendlyEmpty(classmateGrid,'No classmate entries were found in this save.');
+  }else{
+    classmates.forEach((character,index)=>{
+      const fields=character.children;
+      const name=friendlyValue(fields,2);
+      const originalName=friendlyValue(fields,3);
+      const type=friendlyValue(fields,9);
+      const gender=friendlyValue(fields,10);
+      const title=name&&name.mode==='string'&&name.str.trim()
+        ? name.str.trim()
+        : originalName&&originalName.mode==='string'&&originalName.str.trim()
+          ? originalName.str.trim()
+          : `Classmate ${index+1}`;
+      const portraitIdentity=originalName&&originalName.mode==='string'&&originalName.str.trim()
+        ? originalName.str
+        : name&&name.mode==='string'
+          ? name.str
+          : '';
+      const portraitName=portraitIdentity.trim().toUpperCase().replace(/[^A-Z0-9_]/g,'');
+      const typeName=type&&type.mode==='varint'
+        ? humanizeEnumSymbol(CHARACTER_TYPE_ENUM[type.value.toString()]||'Unknown type')
+        : '';
+      const card=friendlyCard(classmateGrid,title,typeName,{portraitName:portraitName||null});
+      card.dataset.search=(title+' '+typeName).toLowerCase();
+      const updateCard=()=>{
+        const updatedTitle=name&&name.mode==='string'&&name.str.trim()
+          ? name.str.trim()
+          : originalName&&originalName.mode==='string'&&originalName.str.trim()
+            ? originalName.str.trim()
+            : `Classmate ${index+1}`;
+        const updatedType=type&&type.mode==='varint'
+          ? humanizeEnumSymbol(CHARACTER_TYPE_ENUM[type.value.toString()]||'Unknown type')
+          : '';
+        card.querySelector('h3').textContent=updatedTitle;
+        const description=card.querySelector('.hint');
+        if(description) description.textContent=updatedType;
+        card.dataset.search=(updatedTitle+' '+updatedType).toLowerCase();
+        filterClassmates();
+      };
+      friendlyField(card,'Display name',name,{onUpdate:updateCard});
+      friendlyField(card,'Classmate type',type,{enumOptions:CHARACTER_TYPE_ENUM,onUpdate:updateCard});
+      friendlyField(card,'Gender',gender,{enumOptions:GENDER_ENUM});
+      const skillPoints=friendlyValue(fields,11);
+      const levelConfig=CLASSMATE_LEVEL_CONFIG_BY_GAME[currentProfile.id];
+      if(levelConfig&&(!skillPoints||skillPoints.wire===0&&skillPoints.mode==='varint')){
+        const savedSkillPoints=skillPoints?Number(skillPoints.value):0;
+        const levelProgress=getClassmateLevelProgress(savedSkillPoints,currentProfile.id);
+        if(levelProgress){
+          const levelField=document.createElement('div');
+          levelField.className='qfield';
+          const levelLabel=document.createElement('label');
+          levelLabel.textContent='In-game level';
+          const levelSelect=document.createElement('select');
+          levelSelect.className='enum-select';
+          levelSelect.setAttribute('aria-label',`In-game level for ${title}`);
+          levelSelect.id=`classmateLevel${index}`;
+          for(let level=1;level<=levelConfig.skillRequired.length;level++){
+            levelSelect.add(new Option(`Level ${level}`,String(level)));
+          }
+          levelSelect.value=String(levelProgress.level);
+          levelSelect.addEventListener('change',()=>{
+            const selectedLevel=Number(levelSelect.value);
+            if(!Number.isInteger(selectedLevel)||selectedLevel<1
+              ||selectedLevel>levelConfig.skillRequired.length) return;
+            recordUndoSnapshot();
+            const nextSkillPoints=levelConfig.skillRequired[selectedLevel-1];
+            setClassmateSkillPoints(character,skillPoints,nextSkillPoints);
+            levelSelect.classList.add('changed');
+            markDirty();
+            const nextProgress=getClassmateLevelProgress(nextSkillPoints,currentProfile.id);
+            levelIncrements.textContent=nextProgress.maxLevel
+              ? 'Maximum level'
+              : `${nextProgress.progress} / ${nextProgress.nextLevelCost} to next level`;
+          });
+          levelField.append(levelLabel,levelSelect);
+          card.appendChild(levelField);
+          const incrementField=document.createElement('div');
+          incrementField.className='qfield';
+          const incrementLabel=document.createElement('span');
+          incrementLabel.className='friendly-label';
+          incrementLabel.textContent='Level increments';
+          const levelIncrements=document.createElement('span');
+          levelIncrements.className='friendly-unavailable';
+          levelIncrements.textContent=levelProgress.maxLevel
+            ? 'Maximum level'
+            : `${levelProgress.progress} / ${levelProgress.nextLevelCost} to next level`;
+          incrementField.append(incrementLabel,levelIncrements);
+          card.appendChild(incrementField);
+        }else{
+          friendlyField(card,'Skill points',skillPoints,{integer:true});
+        }
+      }else{
+        friendlyField(card,'Skill points',skillPoints,{integer:true});
+      }
+    });
+  }
+
+  if(!buildings.length){
+    friendlyEmpty(buildingGrid,'No campus buildings were found in this save.');
+  }else{
+    buildings.forEach((building,index)=>{
+      const fields=building.children;
+      const type=friendlyValue(fields,1);
+      const level=friendlyValue(fields,3);
+      const constructed=friendlyValue(fields,4);
+      const rawType=type&&type.mode==='varint'?BUILDING_TYPE_ENUM[type.value.toString()]:null;
+      const title=rawType?humanizeEnumSymbol(rawType):`Building ${index+1}`;
+      const buildingArts=BUILDING_ART_BY_GAME[currentProfile.id]||{};
+      const decorationArts=DECORATION_ART_BY_GAME[currentProfile.id]||{};
+      const decorationAssetName=rawType?decorationArts[rawType]||null:null;
+      const decorationType=type&&type.mode==='varint'&&isDecorationType(type.value);
+      const card=friendlyCard(buildingGrid,title,`Building ${index+1}`,{
+        iconName:decorationType?'decorations':'buildings',
+        buildingAssetName:decorationAssetName?null:rawType?buildingArts[rawType]||null:null,
+        decorationAssetName,
+      });
+      const updateBuildingCard=()=>{
+        const updatedType=type&&type.mode==='varint'?BUILDING_TYPE_ENUM[type.value.toString()]:null;
+        const updatedTitle=updatedType?humanizeEnumSymbol(updatedType):`Building ${index+1}`;
+        const updatedDecoration=updatedType?decorationArts[updatedType]||null:null;
+        const updatedBuilding=updatedType?buildingArts[updatedType]||null:null;
+        const updatedDecorationType=type&&type.mode==='varint'&&isDecorationType(type.value);
+        const updatedIcon=updatedDecorationType?'decorations':'buildings';
+        card.querySelector('h3').textContent=updatedTitle;
+        const image=card.querySelector('.friendly-card-portrait');
+        image.classList.toggle('is-specific-art',Boolean(updatedDecoration||updatedBuilding));
+        setFriendlyCardImage(card.querySelector('.friendly-card-portrait'),{
+          src:updatedDecoration
+            ? `assets/${currentProfile.id}/ui/decorations/${updatedDecoration}.png`
+            : updatedBuilding
+              ? `assets/${currentProfile.id}/ui/buildings/${updatedBuilding}.png`
+              : null,
+          alt:`${updatedTitle} ${updatedDecorationType?'decoration':'building'} artwork`,
+          fallbackSrc:`assets/${currentProfile.id}/ui/icons/category_${updatedIcon}.png`,
+          fallbackAlt:updatedDecorationType?'Decoration icon; specific artwork unavailable':'Campus building icon; specific artwork unavailable',
+          fallbackTitle:'Specific artwork unavailable',
+        });
+      };
+      friendlyField(card,'Building type',type,{enumOptions:BUILDING_TYPE_ENUM,onUpdate:updateBuildingCard});
+      friendlyField(card,'Upgrade level',level,{integer:true});
+      friendlyField(card,'Built',constructed,{enumOptions:{0:'FALSE',1:'TRUE'}});
+    });
+  }
+
+  if(!plots.length){
+    friendlyEmpty(plotGrid,'No campus plots were found in this save.');
+  }else{
+    plots.forEach((plot,index)=>{
+      const fields=plot.children;
+      const x=friendlyValue(fields,1);
+      const y=friendlyValue(fields,2);
+      const unlocked=friendlyValue(fields,3);
+      const coordX=x&&x.mode==='varint'?x.value.toString():'?';
+      const coordY=y&&y.mode==='varint'?y.value.toString():'?';
+      const card=friendlyCard(plotGrid,`Plot ${index+1}`,`Position: ${coordX}, ${coordY}`,{showIcon:false});
+      friendlyField(card,'Unlocked',unlocked,{enumOptions:{0:'FALSE',1:'TRUE'}});
+    });
+  }
+  buildRelationshipEditor();
+  filterClassmates();
+}
+function filterClassmates(){
+  const query=el('classmateFilter').value.trim().toLowerCase();
+  const cards=Array.from(el('classmateGrid').querySelectorAll('.friendly-card'));
+  let visible=0;
+  cards.forEach(card=>{
+    const matches=!query||(card.dataset.search||'').includes(query);
+    card.classList.toggle('hidden',!matches);
+    if(matches) visible++;
+  });
+  const noEntries=el('classmateGrid').querySelector('.friendly-empty:not(.no-classmate-matches)');
+  let noMatches=el('classmateGrid').querySelector('.no-classmate-matches');
+  if(!noEntries&&query&&visible===0&&cards.length>0){
+    if(!noMatches){
+      noMatches=document.createElement('div');
+      noMatches.className='friendly-empty no-classmate-matches';
+      noMatches.textContent='No classmates match that search.';
+      el('classmateGrid').appendChild(noMatches);
+    }
+  }else if(noMatches){
+    noMatches.remove();
+  }
+}
+el('classmateFilter').addEventListener('input',filterClassmates);
+[['classmatesToggle','classmatesPanel'],['buildingsToggle','buildingsPanel'],['plotsToggle','plotsPanel'],['relationshipsToggle','relationshipsPanel']].forEach(([toggleId,panelId])=>{
+  el(toggleId).addEventListener('click',()=>{
+    const expanded=el(toggleId).getAttribute('aria-expanded')==='true';
+    [['classmatesToggle','classmatesPanel'],['buildingsToggle','buildingsPanel'],['plotsToggle','plotsPanel'],['relationshipsToggle','relationshipsPanel']].forEach(([otherToggleId,otherPanelId])=>{
+      const selected=!expanded&&otherToggleId===toggleId;
+      el(otherToggleId).setAttribute('aria-expanded',String(selected));
+      el(otherPanelId).hidden=!selected;
+      el(otherPanelId).classList.toggle('hidden',!selected);
+    });
+  });
+});
+
+// Keep the big tree's copy of an entry's input in sync when quick-fields edit it, and vice versa.
+function syncLinkedInputs(entry){
+  const value=entry.mode==='string'?entry.str:entry.value.toString();
+  ['_quickInput','_treeInput','_friendlyInput'].forEach(key=>{
+    const input=entry[key];
+    if(input&&document.activeElement!==input) input.value=value;
+  });
+}
+
+/* ---- Recursive tree renderer ---- */
+function renderNode(container, entries, schemaName, depth, pathPrefix='ClientGameState'){
+  // group by field number, preserving first-seen order
+  const order = [];
+  const byField = new Map();
+  for(const e of entries){
+    if(!byField.has(e.field)){ byField.set(e.field, []); order.push(e.field); }
+    byField.get(e.field).push(e);
+  }
+  for(const fieldNum of order){
+    const group = byField.get(fieldNum);
+    const meta = fieldMeta(schemaName, fieldNum);
+    const label = meta ? meta.n : ("field "+fieldNum);
+    const repeated = group.length > 1;
+    const fieldPath=`${pathPrefix}.${label}`;
+
+    if(group[0].mode === 'msg'){
+      // one <details> per group, listing each repeated instance inside
+      const det = document.createElement('details');
+      det.className = 'node';
+      det.dataset.field = fieldNum;
+      det.dataset.label = label.toLowerCase();
+      det.dataset.path=fieldPath.toLowerCase();
+      const sum = document.createElement('summary');
+      sum.innerHTML = '<span>'+label+'</span><span class="fnum">#'+fieldNum+'</span>'
+        + (repeated ? '<span class="count">&times; '+group.length+'</span>' : '');
+      det.appendChild(sum);
+      const body = document.createElement('div');
+      const childSchemaName = meta && meta.m ? meta.m : null;
+      group.forEach((entry, idx)=>{
+        const itemWrap = document.createElement('div');
+        itemWrap.className = repeated ? 'repeat-item' : '';
+        if(repeated){
+          const controls = document.createElement('div');
+          controls.className = 'row';
+          controls.innerHTML = '<span class="lbl">'+label+' ['+idx+']</span>';
+          const dup = document.createElement('button');
+          dup.className = 'dup'; dup.type='button'; dup.textContent = 'duplicate';
+          dup.onclick = ()=>{
+            recordUndoSnapshot();
+            duplicateEntry(entries, entry);
+            rebuildAfterStructuralChange();
+          };
+          const del = document.createElement('button');
+          del.className = 'del'; del.type='button'; del.textContent = 'delete';
+          del.onclick = ()=>{
+            if(!window.confirm('Delete this repeated message?')) return;
+            recordUndoSnapshot();
+            deleteEntry(entries, entry);
+            rebuildAfterStructuralChange();
+          };
+          controls.appendChild(dup); controls.appendChild(del);
+          itemWrap.appendChild(controls);
+        }
+        renderNode(itemWrap, entry.children, childSchemaName || (label+"?"), depth+1,fieldPath+(repeated||meta&&meta.repeated?`[${idx}]`:'' ));
+        body.appendChild(itemWrap);
+      });
+      det.appendChild(body);
+      container.appendChild(det);
+      continue;
+    }
+
+    // scalar-ish groups (varint / string / bytes / fixed) - render each as a row
+    group.forEach((entry, idx)=>{
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.dataset.label = label.toLowerCase();
+      row.dataset.path=(fieldPath+(repeated||meta&&meta.repeated?`[${idx}]`:'' )).toLowerCase();
+      const lbl = document.createElement('span');
+      lbl.className = 'lbl';
+      lbl.textContent = label + (repeated ? ' ['+idx+']' : '');
+      row.appendChild(lbl);
+      const fnumTag = document.createElement('span');
+      fnumTag.className = 'fnum'; fnumTag.textContent = '#'+fieldNum;
+      row.appendChild(fnumTag);
+
+      if(entry.mode === 'varint'){
+        if(meta && meta.enum){
+          entry._treeInput=createCodedValueSelect(entry,meta,label);
+          row.appendChild(entry._treeInput);
+        }else if(meta && meta.fmt==='bool'){
+          entry._treeInput=createCodedValueSelect(entry,meta,label);
+          row.appendChild(entry._treeInput);
+        }else{
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.value = entry.value.toString();
+          input.addEventListener('input', ()=>{
+            const value=readIntegerInput(input);
+            if(value===null) return;
+            beginUndoEdit(input);
+            entry.value=value;
+            input.classList.add('changed');
+            syncLinkedInputs(entry);
+            markDirty();
+          });
+          input.addEventListener('change',()=>finishUndoEdit(input));
+          entry._treeInput = input;
+          row.appendChild(input);
+        }
+        if(meta && meta.fmt==='timestamp'){
+          const hint = document.createElement('span');
+          hint.className = 'hint';
+          hint.textContent = fmtTimestamp(entry.value);
+          const input = row.querySelector('input');
+          if(input) input.addEventListener('input', ()=>{ hint.textContent = fmtTimestamp(entry.value); });
+          row.appendChild(hint);
+        }
+      }else if(entry.mode === 'string'){
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = entry.str;
+        input.addEventListener('input', ()=>{
+          beginUndoEdit(input);
+          entry.str = input.value;
+          input.classList.add('changed');
+          markDirty();
+        });
+        input.addEventListener('change',()=>finishUndoEdit(input));
+        entry._treeInput=input;
+        row.appendChild(input);
+      }else{ // bytes / fixed
+        const ta = document.createElement('textarea');
+        ta.value = bytesToHex(entry.bytes);
+        ta.spellcheck = false;
+        ta.addEventListener('input', ()=>{
+          const clean=ta.value.replace(/\s/g,'');
+          const valid=/^[0-9a-f]*$/i.test(clean)&&clean.length%2===0;
+          setInputValidity(ta,valid,'Enter complete hexadecimal byte pairs; spaces are optional.');
+          if(!valid) return;
+          beginUndoEdit(ta);
+          entry.bytes = hexToBytesLoose(ta.value);
+          ta.classList.add('changed');
+          const badge=row.querySelector('.badge');
+          if(badge) badge.textContent='hex · '+entry.bytes.length+'B';
+          markDirty();
+        });
+        ta.addEventListener('change',()=>finishUndoEdit(ta));
+        row.appendChild(ta);
+        const b = document.createElement('span');
+        b.className = 'badge'; b.textContent = 'hex \u00b7 '+entry.bytes.length+'B';
+        row.appendChild(b);
+      }
+
+      if(repeated){
+        const del = document.createElement('button');
+        del.className = 'del'; del.type='button'; del.textContent = 'delete';
+        del.onclick = ()=>{
+          if(!window.confirm('Delete this repeated field?')) return;
+          recordUndoSnapshot();
+          deleteEntry(entries, entry);
+          rebuildAfterStructuralChange();
+        };
+        row.appendChild(del);
+      }
+      container.appendChild(row);
+    });
+  }
+}
+function deleteEntry(parentArray, entry){
+  const i = parentArray.indexOf(entry);
+  if(i>=0) parentArray.splice(i,1);
+  markDirty();
+}
+function duplicateEntry(parentArray, entry){
+  const clone = deepCloneEntry(entry);
+  const i = parentArray.indexOf(entry);
+  parentArray.splice(i+1,0,clone);
+  markDirty();
+}
+function deepCloneEntry(entry){
+  const c = Object.assign({}, entry);
+  c.uid = nextUid();
+  delete c._treeInput; delete c._quickInput;
+  if(entry.mode==='msg') c.children = entry.children.map(deepCloneEntry);
+  if(entry.mode==='bytes' || entry.mode==='fixed') c.bytes = entry.bytes.slice();
+  return c;
+}
+function rebuildAfterStructuralChange(){
+  fullTreeRendered=false;
+  renderFullSaveTree();
+  buildQuickFields();
+  buildFriendlyEditors();
+  buildSaveSummary();
+  updateSearchResults();
+  updateEditorState();
+}
+
+/* ---- Search / filter ---- */
+el('searchBox').addEventListener('input', updateSearchResults);
+el('searchBox').addEventListener('keydown',event=>{
+  if(event.key==='Escape'){
+    el('searchBox').value='';
+    updateSearchResults();
+  }
+});
+
+el('undoBtn').addEventListener('click',undoLastEdit);
+el('revertBtn').addEventListener('click',revertAllEdits);
+
+/* ---- Expand / collapse all ---- */
+el('expandAllBtn').addEventListener('click', ()=>{
+  if(!fullTreeRendered) renderFullSaveTree();
+  setFullDataExpanded(true);
+  el('tree').querySelectorAll('details.node').forEach(d=>d.open = true);
+});
+el('collapseAllBtn').addEventListener('click', ()=>{
+  el('tree').querySelectorAll('details.node').forEach(d=>d.open = false);
+});
+
+/* ---- File input wiring ---- */
+const dropzone = el('dropzone');
+const fileInput = el('fileInput');
+fileInput.addEventListener('change', e=>{
+  if(e.target.files[0]) handleFile(e.target.files[0]);
+});
+['dragenter','dragover'].forEach(ev=>dropzone.addEventListener(ev, e=>{
+  e.preventDefault(); dropzone.classList.add('drag');
+}));
+['dragleave','drop'].forEach(ev=>dropzone.addEventListener(ev, e=>{
+  e.preventDefault(); dropzone.classList.remove('drag');
+}));
+dropzone.addEventListener('drop', e=>{
+  const f = e.dataTransfer.files[0];
+  if(f) handleFile(f);
+});
+
+el('reloadBtn').addEventListener('click', ()=>{
+  if(dirty&&!window.confirm('Discard the unsaved edits and load a different file?')) return;
+  el('editorArea').classList.add('hidden');
+  fullTreeRendered=false;
+  el('tree').replaceChildren();
+  setFullDataExpanded(false);
+  [['classmatesToggle','classmatesPanel'],['buildingsToggle','buildingsPanel'],['plotsToggle','plotsPanel']].forEach(([toggleId,panelId])=>{
+    el(toggleId).setAttribute('aria-expanded','false');
+    el(panelId).hidden=true;
+    el(panelId).classList.add('hidden');
+  });
+  el('dropcard').classList.remove('hidden');
+  setStatus('');
+  fileInput.value = '';
+  rootEntries = null;
+  originalPlainBytes=null;
+  undoHistory=[];
+  updateEditorState();
+  resetGameTheme();
+});
+
+/* ---- Download: reserialize + re-encrypt + trigger save ---- */
+el('downloadBtn').addEventListener('click', async ()=>{
+  try{
+    if(!currentProfile) throw new Error('Load and identify an HSS or HWU save before downloading.');
+    setStatus("Rebuilding protobuf...");
+    const plain = serializeMessage(rootEntries);
+    setStatus("Re-encrypting with a fresh IV...");
+    const enc = await encryptSave(plain,currentProfile);
+    const blob = new Blob([enc], {type:'application/octet-stream'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = (el('outName').value.trim() || currentProfile.defaultFilename);
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setStatus("Wrote "+a.download+" ("+enc.length+" bytes). Decrypt/parse this yourself again if you want to double-check it before installing it on device.", 'ok');
+    originalPlainBytes=plain.slice();
+    undoHistory=[];
+    updateEditorState();
+  }catch(e){
+    console.error(e);
+    setStatus("Could not rebuild the save:\n"+e.message, 'err');
+  }
+});
+
+window.addEventListener('beforeunload', (e)=>{
+  if(dirty){ e.preventDefault(); e.returnValue=''; }
+});
+</script>
+</body>
+</html>

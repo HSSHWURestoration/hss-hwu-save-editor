@@ -1,0 +1,5 @@
+*.sav
+test-data/
+test-saves/
+**/test-save*
+**/*test-save*
