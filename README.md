@@ -14,7 +14,7 @@ This is my High School Story (HSS) and Hollywood U (HWU) save editor. It's web-b
 First, use the BACKUP / RESTORE menu in your HSS / HWU Restoration apk to export a copy of your save file.
 
 Visit this link:
-**https://muttupnable.github.io/hss-hwu-save-editor/**
+**https://hsshwurestoration.github.io/hss-hwu-save-editor/**
 
 The first page has a box to select your save file. Click it to open the file picker, or, if you're on PC, drag the file over the box.
 
