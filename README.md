@@ -15,9 +15,9 @@ First, you want to use the BACKUP / RESTORE menu in your HSS / HWU Restoration a
 Visit this link:
 **https://muttupnable.github.io/hss-hwu-save-editor/**
 
-The first page you see, there is a box to upload your save file too. Select this and it will open a file picker, or if you are on PC you can drag the file directly over the box.
+The first page has a box to select your save file. Click it to open the file picker, or, if you're on PC, drag the file over the box.
 
-You will then be taken to the save editor and analysis page where you will find menus and buttons to change your save data with. Have fun and always ensure to keep your original backup safe and untouched!
+You'll then see the save editor and analysis page, with menus and buttons to change your save data. When you're done, select **Download edited save** to download your edited copy. Have fun, and keep your original backup safe and untouched!
 
 The root `index.html` is the editor. Its HSS and HWU art and interface files are served from the relative `assets/` directories.
 
